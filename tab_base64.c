@@ -7,8 +7,28 @@
 
 #define SZ 128
 
+static GtkEntryBuffer *buffer = NULL;
+
+static GtkWidget *label = NULL;
+
+static void clicked(GtkWidget*, gpointer) {
+	gtk_label_set_text(GTK_LABEL(label), gtk_entry_buffer_get_text(buffer));
+}
+
 GtkWidget *tab_base64() {
+	// output
+	label = gtk_label_new(NULL);
+	// input
+	buffer = gtk_entry_buffer_new(NULL, -1);
+	GtkWidget *entry = gtk_entry_new_with_buffer(buffer);
+	// button
+	GtkWidget *button = gtk_button_new_with_mnemonic("_base64");
+	g_signal_connect(button, "clicked", G_CALLBACK(clicked), NULL);
+	// page
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
+	gtk_box_append(GTK_BOX(box), button);
+	gtk_box_append(GTK_BOX(box), entry);
+	gtk_box_append(GTK_BOX(box), label);
 	return box;
 }
 
