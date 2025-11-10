@@ -3,7 +3,7 @@
 #include <string.h>
 #include <openssl/evp.h>
 #include <gtk/gtk.h>
-//#include "viewer_file.h"
+#include "tabs.h"
 
 #define SZO (1024*1024*1024)
 #define SZI (1024*1024*768+1)
@@ -65,6 +65,22 @@ static GtkWidget *flexiblespace() {
 
 GtkWidget *tab_base64() {
 
+	static int called = 0;
+	static GtkWidget *box = NULL;
+
+	if (0 == called) {
+		box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
+		called++;
+		return box;
+	}
+
+	if (2 == called) {
+		return box;
+	}
+
+	assert(1 == called);
+	called++;
+
 	// input
 	buffer = gtk_entry_buffer_new(NULL, -1);
 	GtkWidget *entry = gtk_entry_new_with_buffer(buffer);
@@ -77,7 +93,6 @@ GtkWidget *tab_base64() {
 	label = gtk_label_new(NULL);
 
 	// page
-	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), entry);
   gtk_box_append(GTK_BOX(box), flexiblespace());
@@ -85,6 +100,7 @@ GtkWidget *tab_base64() {
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), label);
   gtk_box_append(GTK_BOX(box), flexiblespace());
+
 	return box;
 
 }

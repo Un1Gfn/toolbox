@@ -1,9 +1,15 @@
 #include <gtk/gtk.h>
 #include <assert.h>
+#include "tabs.h"
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
-GtkWidget *tab_base64();
+static guint n_tab_base64 = 99;
+
+static void switch_page(GtkNotebook*, GtkWidget*, guint page_num, gpointer) {
+	// call a second time to fully instantiate
+	if (n_tab_base64 == page_num) tab_base64();
+}
 
 static void activate(GtkApplication* app, gpointer) {
 
@@ -15,11 +21,14 @@ static void activate(GtkApplication* app, gpointer) {
 	gtk_window_set_child(GTK_WINDOW(window), notebook);
 
 	// tabs
-	assert(0 == gtk_notebook_append_page(GTK_NOTEBOOK(notebook), tab_base64(), gtk_label_new("Base64")));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), tab_ddc(), gtk_label_new("DDC"));
+	n_tab_base64 = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), tab_base64(), gtk_label_new("Base64"));
+	g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 	
 	// show
   //gtk_widget_set_visible(window, true);
 	gtk_window_present(GTK_WINDOW(window));
+
 }
 
 int main(int argc, char **argv) {
