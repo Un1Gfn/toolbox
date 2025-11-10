@@ -12,7 +12,7 @@
 #define TOSTRING(x) STRINGIFY(x)
 #define AT __FILE__ ":" TOSTRING(__LINE__) " "
 
-// base64
+// encoded string
 static char enc[SZO]={};
 
 // input
@@ -23,6 +23,7 @@ static GtkWidget *label = NULL;
 
 static void base64() {
 
+	// check
 	gsize _ = gtk_entry_buffer_get_bytes(buffer);
 	int n = _;
 	assert((long long)n == (long long)_);
@@ -30,11 +31,13 @@ static void base64() {
 	if(n == 0) { g_warning(AT); return; }
 	assert(n > 0);
 
+	// init
   EVP_ENCODE_CTX *ctx=EVP_ENCODE_CTX_new();
   assert(ctx);
   EVP_EncodeInit(ctx);
-	bzero(enc, SZO);
 
+	// calculate
+	bzero(enc, SZO);
   const int r = EVP_EncodeBlock(
 		(unsigned char*)enc,
 		(const unsigned char*)gtk_entry_buffer_get_text(buffer),
@@ -42,7 +45,7 @@ static void base64() {
 	);
   assert(r>=4&&r%4==0);
 
-	r:;
+	// cleanup
   assert(0==EVP_ENCODE_CTX_num(ctx));
   EVP_ENCODE_CTX_free(ctx);
   ctx=NULL;
@@ -52,6 +55,12 @@ static void base64() {
 static void clicked(GtkWidget*, gpointer) {
 	base64();
 	gtk_label_set_text(GTK_LABEL(label), enc);
+}
+
+static GtkWidget *flexiblespace() {
+	GtkWidget *_ = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_vexpand(_, TRUE);
+	return _;
 }
 
 GtkWidget *tab_base64() {
@@ -69,11 +78,13 @@ GtkWidget *tab_base64() {
 
 	// page
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
-	//gtk_box_set_homogeneous(GTK_BOX(box), true);
-	//gtk_box_append(GTK_BOX(box), gtk_label_new(NULL));
+  gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), entry);
+  gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), button);
+  gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), label);
+  gtk_box_append(GTK_BOX(box), flexiblespace());
 	return box;
 
 }
