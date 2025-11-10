@@ -10,11 +10,14 @@ toolbox: $(GUI)
 	$(C) $(CFLAGS) -o $@ $? $(LG)
 
 $(GUI): %.o: %.c
-	$(C) -c $(CFLAGS) $(FG) -o $@ $?
+	$(C) -c $(CFLAGS) $(FG) -o $@ -MMD $?
 
 #util.o lib.o: %.o:%.c
 #	$(C) -c $(CFLAGS) -o $@ $?
 
 .PHONY: clean
 clean:
-	@trash toolbox *.o 2>/dev/null || true
+	@trash toolbox *.o *.d 2>/dev/null || true
+
+include $(wildcard *.d)
+
