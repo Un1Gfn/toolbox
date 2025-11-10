@@ -8,6 +8,10 @@
 #define SZO (1024*1024*1024)
 #define SZI (1024*1024*768+1)
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define AT __FILE__ ":" TOSTRING(__LINE__) " "
+
 // base64
 static char enc[SZO]={};
 
@@ -19,16 +23,18 @@ static GtkWidget *label = NULL;
 
 static void base64() {
 
+	gsize _ = gtk_entry_buffer_get_bytes(buffer);
+	int n = _;
+	assert((long long)n == (long long)_);
+	if(n >= SZI) { g_warning(AT); return; }
+	if(n == 0) { g_warning(AT); return; }
+	assert(n > 0);
+
   EVP_ENCODE_CTX *ctx=EVP_ENCODE_CTX_new();
   assert(ctx);
   EVP_EncodeInit(ctx);
 	bzero(enc, SZO);
 
-	gsize _ = gtk_entry_buffer_get_bytes(buffer);
-	int n = _;
-	assert((long long)n == (long long)_);
-	assert(n > 0);
-	assert(n < SZI);
   const int r = EVP_EncodeBlock(
 		(unsigned char*)enc,
 		(const unsigned char*)gtk_entry_buffer_get_text(buffer),
@@ -36,6 +42,7 @@ static void base64() {
 	);
   assert(r>=4&&r%4==0);
 
+	r:;
   assert(0==EVP_ENCODE_CTX_num(ctx));
   EVP_ENCODE_CTX_free(ctx);
   ctx=NULL;
@@ -45,7 +52,6 @@ static void base64() {
 static void clicked(GtkWidget*, gpointer) {
 	base64();
 	gtk_label_set_text(GTK_LABEL(label), enc);
-	//gtk_label_set_text(GTK_LABEL(label), gtk_entry_buffer_get_text(buffer));
 }
 
 GtkWidget *tab_base64() {
@@ -63,6 +69,7 @@ GtkWidget *tab_base64() {
 
 	// page
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
+	//gtk_box_set_homogeneous(GTK_BOX(box), true);
 	//gtk_box_append(GTK_BOX(box), gtk_label_new(NULL));
 	gtk_box_append(GTK_BOX(box), entry);
 	gtk_box_append(GTK_BOX(box), button);
