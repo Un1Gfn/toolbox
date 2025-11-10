@@ -1,13 +1,23 @@
-/*
-export A=toolbox L=gtk4; B() { gcc -std=gnu23 -Wall -Wextra -O0 -Og -g $(pkg-config --cflags $L) $A.c $(pkg-config --libs $L) -o $A.out; }; R() { ./$A.out; };
-*/
-
 #include <gtk/gtk.h>
+#include <assert.h>
+
+_Static_assert(4 == GTK_MAJOR_VERSION, "");
+
+GtkWidget *tab_base64();
 
 static void activate(GtkApplication* app, gpointer) {
+
+	// main window
   GtkWidget *window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "Toolbox");
-  gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
+  gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
+	GtkWidget *notebook = gtk_notebook_new();
+	gtk_window_set_child(GTK_WINDOW(window), notebook);
+
+	// tabs
+	assert(0 == gtk_notebook_append_page(GTK_NOTEBOOK(notebook), tab_base64(), gtk_label_new("Base64")));
+	
+	// show
   //gtk_widget_set_visible(window, true);
 	gtk_window_present(GTK_WINDOW(window));
 }
