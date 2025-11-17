@@ -1,15 +1,44 @@
 #!/bin/bash -eu
 
-S="$(cat cangjie5.txt | grep "^[a-z]" | cut -d " " -f 2-)"
+listing() {
 
-L="$(echo "$S" | wc -l)"
-M="$(echo "$S" | wc -m)"
-[ "$M" = "$((L*2))" ]
+	# list of characters
+	local C="$(cat cangjie5.txt | grep "^[a-z]" | cut -d " " -f 2-)"
 
-A=($(echo "$S" | sed "s/^/'/g"))
+	# list of canjie codes
+	local E="$(cat cangjie5.txt | grep "^[a-z]" | cut -d " " -f 1)"
 
-N="$(printf "%d\n" "${A[@]}")"
+	# one character per line
+	local N="$(wc -l <<<"$C")"
+	[ "$(wc -m <<<"$C")" = "$((N*2))" ]
 
-echo "$N" | sort -n
+	# list of utf-16 of each character
+	local A=($(echo "$C" | sed "s/^/'/g"))
+	local U="$(printf "%d\n" "${A[@]}")"
+	[ "$(wc -l <<<"$U")" = "$N" ]
 
-printf "\nok\n\n"
+	# listing
+	paste -d " " <(echo "$U") <(echo "$E") | sort -s -n
+
+}
+
+unique() {
+	local i=0
+	local T=()
+	set +u
+	while read -r l; do
+		#if ((0==(i++)%10000)); then echo "$i"; fi
+		local L=($l)
+		[ 2 = "${#L[@]}" ]
+		local k="${L[0]}"
+		local v="${L[1]}"
+		T["$k"]="${T["$k"]} $v"
+	done
+	set -u
+	for i in "${!T[@]}"; do
+	  printf "%s%s\n" "$i" "${T["$i"]}"
+	done
+}
+
+listing | unique
+
