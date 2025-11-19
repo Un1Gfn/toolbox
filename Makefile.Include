@@ -1,5 +1,9 @@
 MAKEFLAGS := -j30
 C := gcc
-CFLAGS := -std=gnu23 -g -Og -Wall -Wextra -MMD -MP
-FG:= $(shell pkg-config gtk4 --cflags)
-L:= $(shell pkg-config --libs gtk4,openssl)
+CFLAGS := -std=gnu23 -g -Og -Wall -Wextra -fpic -fPIC -MMD -MP
+FG := $(shell pkg-config gtk4 --cflags)
+
+SO1 := libcangjie5
+SO2 := libcangjie5/libcangjie5.so
+L := $(shell pkg-config --libs gtk4,openssl) -Wl,-rpath,\$$ORIGIN/libcangjie5 -L libcangjie5 -lcangjie5
+
