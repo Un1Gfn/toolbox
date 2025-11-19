@@ -1,7 +1,6 @@
 MAKEFLAGS := --no-print-directory -j30
-C := gcc
-G_LOG_DOMAIN := toolbox
-CFLAGS := -std=gnu23 -g -Og -Wall -Wextra -fpic -fPIC -MMD -MP -DG_LOG_DOMAIN=\"$(G_LOG_DOMAIN)\"
+G_LOG_DOMAIN := toolbox_0
+C := gcc -std=gnu23 -g -Og -Wall -Wextra -fpic -fPIC -MMD -MP -DG_LOG_DOMAIN=\"$(G_LOG_DOMAIN)\" $(CFLAGS)
 FG := $(shell pkg-config gtk4 --cflags)
 
 #SO1 := libcangjie5

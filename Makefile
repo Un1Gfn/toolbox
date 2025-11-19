@@ -1,6 +1,11 @@
 -include Makefile.Include
 
-GUI := $(addsuffix .o,toolbox tab_base64 tab_ddc)
+GUI := $(addsuffix .o, \
+	toolbox \
+	tab_welcome \
+	tab_base64 \
+	tab_env \
+)
 
 all: $(SO1)
 	@$(MAKE) toolbox
@@ -12,11 +17,14 @@ $(foreach d, $(SO1), $(eval \
 ))
 
 toolbox: $(GUI) $(SO2)
-	$(C) $(CFLAGS) $(GUI) $(L) -o $@
+	$(C) $(GUI) $(L) -o $@
 
 $(GUI):
 %.o: %.c tabs.h
-	$(C) -c $(CFLAGS) $(FG) -o $@ $<
+	$(C) -c $(FG) -o $@ $<
+
+tab_welcome.c: tab_welcome.sh
+	./$< >$@
 
 tabs.h: tabs.sh
 	./$< >$@
@@ -34,7 +42,7 @@ purge:
 .PHONY: run_debug debug
 
 run_debug: all
-	env G_MESSAGES_DEBUG="toolbox tab_base64" ./toolbox
+	env G_MESSAGES_DEBUG="$(G_LOG_DOMAIN) tab_base64" ./toolbox
 
 run: all
 	./toolbox

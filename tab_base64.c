@@ -82,8 +82,9 @@ GtkWidget *tab_base64() {
 	}
 
 	// input
-	buffer = gtk_entry_buffer_new(NULL, -1);
+	buffer = gtk_entry_buffer_new("animal", -1);
 	GtkWidget *entry = gtk_entry_new_with_buffer(buffer);
+	//assert(gtk_widget_grab_focus(entry));
 
 	// button
 	GtkWidget *button = gtk_button_new_with_mnemonic("_base64");
@@ -92,14 +93,19 @@ GtkWidget *tab_base64() {
 	// output
 	label = gtk_label_new(NULL);
 
+	gboolean _ = false;
+
 	// page
   gtk_box_append(GTK_BOX(box), flexiblespace());
+	g_assert_false(gtk_widget_grab_focus(entry));
 	gtk_box_append(GTK_BOX(box), entry);
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), button);
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), label);
   gtk_box_append(GTK_BOX(box), flexiblespace());
+	g_assert_true(gtk_widget_grab_focus(entry));
+	//g_assert_true(gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entry)));
 
 	return box;
 

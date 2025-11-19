@@ -1,10 +1,10 @@
 -include ../Makefile.Include
 
 libcangjie5.so: table.o
-	$(C) -shared $(CFLAGS) -o $@ $^
+	$(C) -shared -o $@ $^
 
 table.o: %.o: %.c table.h
-	$(C) -c $(CFLAGS) -o $@ $<
+	$(C) -c -o $@ $<
 
 table.c: gen.sh cangjie5.txt
 	./gen.sh <cangjie5.txt

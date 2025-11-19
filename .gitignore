@@ -1,5 +1,6 @@
 /tabs.h
 /toolbox
+/tab_welcome.c
 *.d
 *.o
 *.so
