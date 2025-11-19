@@ -7,13 +7,10 @@
 #include <openssl/evp.h>
 #include <gtk/gtk.h>
 #include "tabs.h"
+#include "util.h"
 
 #define SZO (1024*1024*1024)
 #define SZI (1024*1024*768+1)
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define AT __FILE__ ":" TOSTRING(__LINE__) " "
 
 // encoded string
 static char enc[SZO]={};
@@ -30,8 +27,8 @@ static void base64() {
 	gsize _ = gtk_entry_buffer_get_bytes(buffer);
 	int n = _;
 	assert((long long)n == (long long)_);
-	if(n >= SZI) { g_warning(AT); return; }
-	if(n == 0) { g_warning(AT); return; }
+	if(n >= SZI) { g_warning(G_STRLOC); return; }
+	if(n == 0) { g_warning(G_STRLOC); return; }
 	assert(n > 0);
 
 	// init
@@ -60,12 +57,6 @@ static void clicked(GtkWidget*, gpointer) {
 	gtk_label_set_text(GTK_LABEL(label), enc);
 }
 
-static GtkWidget *flexiblespace() {
-	GtkWidget *_ = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_vexpand(_, TRUE);
-	return _;
-}
-
 GtkWidget *tab_base64() {
 
 	static GtkWidget *box = NULL;
@@ -92,8 +83,6 @@ GtkWidget *tab_base64() {
 
 	// output
 	label = gtk_label_new(NULL);
-
-	gboolean _ = false;
 
 	// page
   gtk_box_append(GTK_BOX(box), flexiblespace());

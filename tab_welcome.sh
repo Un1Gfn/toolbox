@@ -3,16 +3,18 @@ cat <<EOF
 #include <gtk/gtk.h>
 #include "tabs.h"
 
-static const char text[] = { $(xxd -i <<"EOF2"
+static const char text[] = { $({ sed "s/^/| /g" | xxd -i; } <<"EOF2"
 
-tips 
+Tips
 
-quick switch to tab N
- $ env TAB=N ./toolbox
+Quick switch to tab N:
 
-...
- $ ...
- 
+ env TAB=N ./toolbox
+
+Lorem ipsum:
+
+ dolor sit amet
+
 EOF2
 ) };
 

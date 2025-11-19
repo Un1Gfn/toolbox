@@ -1,11 +1,19 @@
 -include Makefile.Include
 
+# alphabetical orer
 GUI := $(addsuffix .o, \
-	toolbox \
-	tab_welcome \
-	tab_base64 \
-	tab_env \
+ toolbox \
+ tab_base64 \
+ tab_ddc \
+ tab_env \
+ tab_welcome \
 )
+
+UTIL := $(addsuffix .o, \
+ util \
+)
+
+OBJ := $(GUI) $(UTIL)
 
 all: $(SO1)
 	@$(MAKE) toolbox
@@ -16,12 +24,16 @@ $(foreach d, $(SO1), $(eval \
  $(d):; $(MAKE) -C $(d) $(d).so \
 ))
 
-toolbox: $(GUI) $(SO2)
-	$(C) $(GUI) $(L) -o $@
+toolbox: $(OBJ) $(SO2)
+	$(C) $(OBJ) $(L) -o $@
 
 $(GUI):
 %.o: %.c tabs.h
 	$(C) -c $(FG) -o $@ $<
+
+$(UTIL):
+%.o: %.c
+	$(C) -c -o $@ $<
 
 tab_welcome.c: tab_welcome.sh
 	./$< >$@

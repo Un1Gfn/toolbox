@@ -16,6 +16,7 @@ static Tab tabs[] = {
 	{ &tab_welcome, "Welcome", false },
 	{ &tab_base64, "Base64", true },
 	{ &tab_env, "Env", false },
+	{ &tab_ddc, "DDC/CI", false },
 	{ NULL, NULL, false }
 };
 
@@ -61,9 +62,10 @@ static void activate(GtkApplication* app, gpointer) {
 	const char *e = g_getenv("TAB");
 	if (e && e[0]) {
 		gchar *p = NULL;
+		errno = 0;
 		gint64 n = g_ascii_strtoll(e, &p, 10);
-		g_assert_false(errno);
-		g_assert_false(e == p);
+		g_assert_true(0==errno);
+		g_assert_true(e != p);
 		g_assert_true(0 <= n);
 		g_assert_true((long long)(sizeof(tabs)/sizeof(Tab)) > n);
 		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), n);
