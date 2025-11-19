@@ -1,3 +1,6 @@
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "tab_base64"
+
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -65,21 +68,18 @@ static GtkWidget *flexiblespace() {
 
 GtkWidget *tab_base64() {
 
-	static int called = 0;
 	static GtkWidget *box = NULL;
 
-	if (0 == called) {
-		box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
-		called++;
-		return box;
+	static int nth_call = 1;
+	switch (nth_call++) {
+		case 1: G_DEBUG_HERE();
+			box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
+			return box;
+		case 2: G_DEBUG_HERE();
+			break;
+		default: G_DEBUG_HERE();
+			return box;
 	}
-
-	if (2 == called) {
-		return box;
-	}
-
-	assert(1 == called);
-	called++;
 
 	// input
 	buffer = gtk_entry_buffer_new(NULL, -1);

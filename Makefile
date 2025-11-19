@@ -3,7 +3,7 @@
 GUI := $(addsuffix .o,toolbox tab_base64 tab_ddc)
 
 all: $(SO1)
-	$(MAKE) toolbox
+	@$(MAKE) toolbox
 
 .PHONY: $(SO1)
 
@@ -30,6 +30,14 @@ clean:
 purge:
 	$(MAKE) clean
 	@{ for i in $(SO1); do $(MAKE) -C $$i purge || true; done; } 2>/dev/null 1>/dev/null
+
+.PHONY: run_debug debug
+
+run_debug: all
+	env G_MESSAGES_DEBUG="toolbox tab_base64" ./toolbox
+
+run: all
+	./toolbox
 
 #-include $(GUI:.o=.d)
 -include $(wildcard *.d)

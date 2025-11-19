@@ -4,6 +4,6 @@ cat <<EOF
 // do not edit
 #ifndef TABS_H
 #define TABS_H
-$(for i in tab_*.c; do echo "GtkWidget *${i%.c}();"; done)
+$(for i in tab_*.c; do echo "GtkWidget* ${i%.c}();"; done)
 #endif
 EOF

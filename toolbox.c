@@ -4,11 +4,29 @@
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
-static guint n_tab_base64 = 99;
+static GtkWidget *notebook = NULL;
+
+typedef struct {
+	const guint n;
+	GtkWidget* (*f)();
+	const char* const l;
+	const bool lazy;// lazy - call a second time to fully instantiate
+} Tab;
+
+static Tab tabs[] = {
+	{ 0, &tab_ddc, "DDC", false },
+	{ 1, &tab_base64, "Base64", true }
+};
 
 static void switch_page(GtkNotebook*, GtkWidget*, guint page_num, gpointer) {
-	// call a second time to fully instantiate
-	if (n_tab_base64 == page_num) tab_base64();
+	// lazy - call a second time to fully instantiate
+	for (size_t i = 0; i < sizeof(tabs)/sizeof(Tab); i++) {
+		Tab *_ = &tabs[i];
+		if (_->lazy && page_num == _->n) {
+			(*(_->f))();
+			break;
+		}
+	}
 }
 
 static void activate(GtkApplication* app, gpointer) {
@@ -17,12 +35,14 @@ static void activate(GtkApplication* app, gpointer) {
   GtkWidget *window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "Toolbox");
   gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-	GtkWidget *notebook = gtk_notebook_new();
+	notebook = gtk_notebook_new();
 	gtk_window_set_child(GTK_WINDOW(window), notebook);
 
 	// tabs
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), tab_ddc(), gtk_label_new("DDC"));
-	n_tab_base64 = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), tab_base64(), gtk_label_new("Base64"));
+	for (size_t i = 0; i < sizeof(tabs)/sizeof(Tab); i++) {
+		Tab *_ = &tabs[i];
+		assert((long long)_->n == (long long)gtk_notebook_append_page(GTK_NOTEBOOK(notebook), (*(_->f))(), gtk_label_new(_->l)));
+	}
 	g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 	
 	// show
