@@ -1,0 +1,5 @@
+MAKEFLAGS := -j30
+C := gcc
+CFLAGS := -std=gnu23 -g -Og -Wall -Wextra -MMD -MP
+FG:= $(shell pkg-config gtk4 --cflags)
+L:= $(shell pkg-config --libs gtk4,openssl)

@@ -1,4 +1,5 @@
-/toolbox
-*.o
-/*.d
 /tabs.h
+/toolbox
+*.d
+*.o
+*.so

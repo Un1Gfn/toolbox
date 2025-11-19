@@ -1,19 +1,17 @@
-MAKEFLAGS := -j30
-C := gcc
-CFLAGS := -std=gnu23 -g -Og -Wall -Wextra -MMD -MP
-FG:= $(shell pkg-config gtk4 --cflags)
-L:= $(shell pkg-config --libs gtk4,openssl)
+-include Makefile.Include
 
 GUI := $(addsuffix .o,toolbox tab_base64 tab_ddc)
 
 toolbox: $(GUI)
 	$(C) $(CFLAGS) $(GUI) $(L) -o $@
 
-$(GUI): %.o: %.c tabs.h
+$(GUI):
+%.o: %.c tabs.h
 	$(C) -c $(CFLAGS) $(FG) -o $@ $<
 
-#util.o lib.o: %.o:%.c
-#	$(C) -c $(CFLAGS) -o $@ $?
+#util.o lib.o:
+#%.o: %.c
+#	$(C) -c $(CFLAGS) -o $@ $<
 
 tabs.h: tabs.sh
 	./$< >$@

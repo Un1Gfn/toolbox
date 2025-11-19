@@ -1,12 +1,17 @@
 #!/bin/bash -eu
 
+IN="$(cat)"
+
 listing() {
 
+	# strip
+	local S="$(grep "^[a-z]" <<<"$IN")"
+
 	# list of characters
-	local C="$(cat cangjie5.txt | grep "^[a-z]" | cut -d " " -f 2-)"
+	local C="$(cut -d " " -f 2- <<<"$S")"
 
 	# list of canjie codes
-	local E="$(cat cangjie5.txt | grep "^[a-z]" | cut -d " " -f 1)"
+	local E="$(cut -d " " -f 1 <<<"$S")"
 
 	# one character per line
 	local N="$(wc -l <<<"$C")"
