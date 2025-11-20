@@ -1,5 +1,5 @@
+// disable g_debug
 #undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "tab_base64"
 
 #include <stdio.h>
 #include <assert.h>
@@ -59,18 +59,9 @@ static void clicked(GtkWidget*, gpointer) {
 
 GtkWidget *tab_base64() {
 
-	static GtkWidget *box = NULL;
-
-	static int nth_call = 1;
-	switch (nth_call++) {
-		case 1: G_DEBUG_HERE();
-			box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 30);
-			return box;
-		case 2: G_DEBUG_HERE();
-			break;
-		default: G_DEBUG_HERE();
-			return box;
-	}
+	// run once
+	static GMutex m = {};
+	assert(g_mutex_trylock(&m));
 
 	// input
 	buffer = gtk_entry_buffer_new("animal", -1);
@@ -84,17 +75,17 @@ GtkWidget *tab_base64() {
 	// output
 	label = gtk_label_new(NULL);
 
-	// page
+	// box of 3
+	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0 /*30*/ );
   gtk_box_append(GTK_BOX(box), flexiblespace());
-	g_assert_false(gtk_widget_grab_focus(entry));
 	gtk_box_append(GTK_BOX(box), entry);
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), button);
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), label);
   gtk_box_append(GTK_BOX(box), flexiblespace());
-	g_assert_true(gtk_widget_grab_focus(entry));
-	//g_assert_true(gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entry)));
+	//gtk_widget_grab_focus(entry);
+	//gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entry));
 
 	return box;
 

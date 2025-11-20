@@ -54,7 +54,7 @@ purge:
 .PHONY: run_debug debug
 
 run_debug: all
-	env G_MESSAGES_DEBUG="$(G_LOG_DOMAIN) tab_base64" ./toolbox
+	env G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox
 
 run: all
 	./toolbox

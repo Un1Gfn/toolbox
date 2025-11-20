@@ -7,6 +7,10 @@ static const char text[] = { $({ sed "s/^/| /g" | xxd -i; } <<"EOF2"
 
 Tips
 
+Tab popup menu
+
+ right click any tab label
+
 Quick switch to tab N:
 
  env TAB=N ./toolbox
