@@ -22,13 +22,13 @@ static Tab tabs[] = {
 	{ NULL, NULL }
 };
 
-static void switch_page(GtkNotebook*, GtkWidget*, guint page_num, gpointer) {
+static void s_switch_page(GtkNotebook*, GtkWidget*, guint page_num, gpointer) {
 	g_debug("switch from page %u to page %u", gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)), page_num);
 	return;
 }
 
 // fully instantiate a tab
-static void func(gpointer data, gpointer userdata) {
+static void th_func(gpointer data, gpointer userdata) {
 	g_assert_true(!userdata);
 	g_assert_true(data);
 	Tab *t = (Tab*)data;
@@ -44,7 +44,7 @@ static void func(gpointer data, gpointer userdata) {
 	g_debug("- [%d] = '%s'", n, t->l);
 }
 
-static void activate(GtkApplication* app, gpointer) {
+static void s_activate(GtkApplication* app, gpointer) {
 
 	// run once
 	static GMutex m = {};
@@ -59,7 +59,7 @@ static void activate(GtkApplication* app, gpointer) {
 	// main window
   GtkWidget *window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "Toolbox");
-  gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
+  gtk_window_set_default_size(GTK_WINDOW(window), 1024, 768);
 
 	// notebook stub
 	notebook = gtk_notebook_new();
@@ -73,7 +73,7 @@ static void activate(GtkApplication* app, gpointer) {
 			gtk_label_new(t->l)
 		));
 	}
-	g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
+	g_signal_connect(notebook, "switch-page", G_CALLBACK(s_switch_page), NULL);
 	gtk_window_set_child(GTK_WINDOW(window), notebook);
 	
 	// show
@@ -94,7 +94,7 @@ static void activate(GtkApplication* app, gpointer) {
 	}
 
 	// notebook full instantiate
-	GThreadPool *pool = g_thread_pool_new(&func, NULL, -1, FALSE, NULL);
+	GThreadPool *pool = g_thread_pool_new(&th_func, NULL, -1, FALSE, NULL);
 	for (Tab *t = tabs; t->f; t++) {
 		g_assert_true(g_thread_pool_push(pool, t, NULL));
 	}
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 		//| G_APPLICATION_REPLACE
 	);
 	g_application_set_version(G_APPLICATION(app), "0.1");
-  g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+  g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
   int status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);
   return status;
