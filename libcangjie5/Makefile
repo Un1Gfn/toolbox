@@ -15,9 +15,9 @@ cangjie5.txt:
 
 .PHONY: clean purge
 clean:
-	trash *.so *.o *.d table.c 2>/dev/null || true
+	rm -f *.so *.o *.d 2>/dev/null || true
 
 purge:
 	$(MAKE) clean
-	trash cangjie5.txt 2>/dev/null || true
+	rm -f table.c cangjie5.txt 2>/dev/null || true
 

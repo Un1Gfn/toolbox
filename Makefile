@@ -44,7 +44,7 @@ tabs.h: tabs.sh
 .PHONY: clean purge
 
 clean:
-	@trash toolbox *.o *.d tabs.h 2>/dev/null || true
+	@rm -f toolbox tab_welcome.c *.o *.d tabs.h 2>/dev/null || true
 	@{ for d in $(SO1); do $(MAKE) -C $$d clean || true; done; } 2>/dev/null 1>/dev/null
 
 purge:
