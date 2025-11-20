@@ -1,19 +1,15 @@
 -include Makefile.Include
 
 # alphabetical orer
-GUI := $(addsuffix .o, \
- toolbox \
+OBJ := $(addsuffix .o, \
  tab_base64 \
  tab_ddc \
  tab_env \
+ tab_pdf \
  tab_welcome \
-)
-
-UTIL := $(addsuffix .o, \
+ toolbox \
  util \
 )
-
-OBJ := $(GUI) $(UTIL)
 
 all: $(SO1)
 	@$(MAKE) toolbox
@@ -25,20 +21,35 @@ $(foreach d, $(SO1), $(eval \
 ))
 
 toolbox: $(OBJ) $(SO2)
-	$(C) $(OBJ) $(L) -o $@
+	$(C) $(OBJ) $(shell pkg-config --libs gtk4,openssl,poppler-glib) $(SO3) -o $@
 
-$(GUI):
+tab_pdf.o \
+: \
 %.o: %.c tabs.h
-	$(C) -c $(FG) -o $@ $<
+	@#$(C) -c $(shell pkg-config --cflags gtk4,papers-view-4.0) -o $@ $<  # fail
+	@#$(C) -c $(shell pkg-config --cflags gtk4,evince-view-3.0) -o $@ $<  # evince gtk3 conflict
+	@#$(C) -c $(shell pkg-config --cflags gtk4,mupdf) -o $@ $<
+	$(C) -c $(shell pkg-config --cflags gtk4,poppler-glib) -o $@ $<
 
-$(UTIL):
-%.o: %.c
-	$(C) -c -o $@ $<
+tab_base64.o \
+tab_ddc.o \
+tab_env.o \
+tab_welcome.o \
+toolbox.o \
+util.o \
+: \
+%.o: %.c tabs.h
+	$(C) -c $(shell pkg-config --cflags gtk4) -o $@ $<
 
-tab_welcome.c: tab_welcome.sh
-	./$< >$@
+#_.o \
+#: \
+#%.o: %.c
+#	$(C) -c -o $@ $<
 
-tabs.h: tabs.sh
+tabs.h \
+tab_welcome.c \
+: \
+%: %.sh
 	./$< >$@
 
 .PHONY: clean purge

@@ -1,4 +1,4 @@
-//#undef G_LOG_DOMAIN
+#undef G_LOG_DOMAIN
 
 #include <gtk/gtk.h>
 #include <assert.h>
@@ -18,6 +18,7 @@ static Tab tabs[] = {
 	{ &tab_base64, "Base64" },
 	{ &tab_env, "Env" },
 	{ &tab_ddc, "DDC/CI" },
+	{ &tab_pdf, "PDF" },
 	{ NULL, NULL }
 };
 
