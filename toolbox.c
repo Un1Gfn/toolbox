@@ -60,6 +60,7 @@ static void s_activate(GtkApplication* app, gpointer) {
   GtkWidget *window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "Toolbox");
   gtk_window_set_default_size(GTK_WINDOW(window), 1024, 768);
+  gtk_widget_set_size_request(window, 1024, 768);
 
 	// notebook stub
 	notebook = gtk_notebook_new();

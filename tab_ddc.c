@@ -1,3 +1,5 @@
+#undef G_LOG_DOMAIN
+
 #include <gtk/gtk.h>
 #include "tabs.h"
 #include "util.h"

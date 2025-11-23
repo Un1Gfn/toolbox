@@ -1,6 +1,7 @@
 MAKEFLAGS := --no-print-directory -j30
 DOMAIN := Toolbox
 C := gcc -std=gnu23 -g -Og -Wall -Wextra -fpic -fPIC -MMD -MP -DG_LOG_DOMAIN=\"$(DOMAIN)\" $(CFLAGS)
+#C := gcc -std=gnu23 -O3 -Wall -Wextra -fpic -fPIC -MMD -MP -DG_LOG_DOMAIN=\"$(DOMAIN)\" $(CFLAGS)
 
 #SO1 := libcangjie5
 #SO2 := libcangjie5/libcangjie5.so

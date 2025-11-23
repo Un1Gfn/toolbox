@@ -64,8 +64,12 @@ purge:
 
 .PHONY: run_debug debug
 
+gdb: all
+	gdb ./toolbox
+
 run_debug: all
 	env G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox
+	@#env G_MESSAGES_DEBUG="all" ./toolbox
 
 run: all
 	./toolbox
