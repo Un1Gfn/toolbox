@@ -6,21 +6,34 @@
 #define MMD "/home/darren/mermaid/mindmap.mmd"
 //#define PDF "/home/darren/mermaid/mindmap.pdf"
 
-static void f_draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
+static double w = 0;
+static double h = 0;
+static PopplerPage *page = NULL;
+static GMutex mux = {};
+static GtkWidget *area = NULL;
 
-	// def
-	GSubprocess *subprocess = NULL;
-	GBytes *buf = NULL;
-	PopplerDocument *document = NULL;
-	PopplerPage *page = NULL;
-	double w = 0;
-	double h = 0;
-	double sx = 0;
-	double sy = 0;
-	double m = 0;
+static gpointer load(gpointer do_draw) {
+	g_debug("L0");
 
-	// exec
-	subprocess = g_subprocess_new(
+	// already locked by caller
+	g_assert_true(!g_mutex_trylock(&mux));
+
+	static PopplerDocument *document = NULL;
+	static GBytes *bytes = NULL;
+
+	// cleanup
+	if (page) {
+		g_assert_true(page && document && bytes);
+		g_object_unref(g_steal_pointer(&page));
+		g_object_unref(g_steal_pointer(&document));
+		g_bytes_unref(g_steal_pointer(&bytes));
+		//page = NULL;
+		//document = NULL;
+		//bytes = NULL;
+	}
+
+	// run
+	auto subprocess = g_subprocess_new(
 		G_SUBPROCESS_FLAGS_STDOUT_PIPE,
 		NULL,
 		"/usr/bin/mmdc",
@@ -30,18 +43,34 @@ static void f_draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 		"-o", "-",
 		NULL
 	);
-	g_subprocess_communicate(subprocess, NULL, NULL, &buf, NULL, NULL);
+	g_subprocess_communicate(subprocess, NULL, NULL, &bytes, NULL, NULL);
 	g_subprocess_wait(subprocess, NULL, NULL);
-
-	// load
-	document = poppler_document_new_from_bytes(buf, NULL, NULL);
+	document = poppler_document_new_from_bytes(bytes, NULL, NULL);
 	page = poppler_document_get_page(document, 0);
-
-	// print
-	cairo_save(cr);
+	g_assert_true(page);
 	poppler_page_get_size(page, &w, &h);
-	sx = (double)w0/w;
-	sy = (double)h0/h;
+
+	// callee unlocks
+	g_mutex_unlock(&mux);
+
+	if((intptr_t)do_draw) {
+		g_debug("LD");
+		gtk_widget_queue_draw(area);
+	}
+
+	g_debug("LZ");
+	return NULL;
+
+}
+
+static void draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
+	g_debug("D0");
+	g_mutex_lock(&mux);
+	g_assert_true(page);
+	g_debug("D1");
+	double m = 0;
+	double sx = (double)w0/w;
+	double sy = (double)h0/h;
 	if (sx > sy) {
 		m = w0 - (w * sy);
 		cairo_translate(cr, m/2, 0);
@@ -52,31 +81,42 @@ static void f_draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 		cairo_scale(cr, sx, sx);
 	}
 	poppler_page_render(page, cr);
+	g_mutex_unlock(&mux);
+	g_debug("DZ");
+}
 
-	// cleanup
-	cairo_restore(cr);
-	g_object_unref(document);
-	g_bytes_unref(buf);
-	g_object_unref(subprocess);
-
+static void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer) {
+	g_debug("P0");
+	if(!g_mutex_trylock(&mux)) {
+		g_debug("P_");
+		return;
+	}
+	g_thread_new(NULL, load, (gpointer)1);
+	g_debug("PZ");
 }
 
 GtkWidget *tab_pdf() {
 
 	// init
-	GtkWidget *area = gtk_drawing_area_new();
-	GtkGesture *click = gtk_gesture_click_new();
-	void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer x) { gtk_widget_queue_draw(GTK_WIDGET(x)); }
+	area = gtk_drawing_area_new();
+	auto click = gtk_gesture_click_new();
 
 	// pen
-  gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), f_draw, NULL, NULL);
-
-	// trigger draw - click
-	g_signal_connect(click, "pressed", G_CALLBACK(s_pressed), area);
-	gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(click));
 
 	// trigger draw - file change
 	// refer to mmwait() in /home/darren/kountdown/src/countdown.c
+
+	// initial draw
+	//gtk_widget_queue_draw(area);
+	//s_pressed(NULL, 0, 0, 0, area);
+
+	g_assert_true(g_mutex_trylock(&mux));
+	load((gpointer)0);
+
+  gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw, NULL, NULL);
+
+	g_signal_connect(click, "pressed", G_CALLBACK(s_pressed), area);
+	gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(click));
 
 	return area;
 
