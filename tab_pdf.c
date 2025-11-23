@@ -56,8 +56,8 @@ static void f_draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 	//G_DEBUG_HERE();
 
 	// no parallel
-	static GMutex m = {};
-	if(!g_mutex_trylock(&m)) {
+	static GMutex mutex = {};
+	if(!g_mutex_trylock(&mutex)) {
 		g_error("gtk_widget_queue_draw() cutting in line!!!");
 		g_assert_true(0);
 		return;
@@ -92,13 +92,13 @@ static void f_draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 	double sx = (double)w0/w;
 	double sy = (double)h0/h;
 	if (sx > sy) {
-		cairo_scale(cr, sy, sy);
 		double m = w0 - (w * sy);
 		cairo_translate(cr, m/2, 0);
+		cairo_scale(cr, sy, sy);
 	} else {
-		cairo_scale(cr, sx, sx);
 		double m = h0 - (h * sx);
 		cairo_translate(cr, 0, m/2);
+		cairo_scale(cr, sx, sx);
 	}
 
 	// render
@@ -107,7 +107,7 @@ static void f_draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 	// cleanup
 	//g_object_unref(page); // segmentation fault
 	g_object_unref(document);
-	g_mutex_unlock(&m);
+	g_mutex_unlock(&mutex);
 
 }
 

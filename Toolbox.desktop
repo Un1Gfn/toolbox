@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Toolbox
+Icon=/home/darren/toolbox/svgrepo_398502_toolbox.svg
+Exec=env TAB=4 /home/darren/toolbox/toolbox
+#StartupWMClass=kountdown
