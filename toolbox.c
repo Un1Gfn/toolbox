@@ -1,4 +1,4 @@
-#undef G_LOG_DOMAIN
+//#undef G_LOG_DOMAIN
 
 #include <gtk/gtk.h>
 #include <assert.h>
@@ -18,7 +18,7 @@ static Tab tabs[] = {
 	{ &tab_base64, "Base64" },
 	{ &tab_env, "Env" },
 	{ &tab_ddc, "DDC/CI" },
-	{ &tab_pdf, "PDF" },
+	//{ &tab_pdf, "PDF" },
 	{ }
 };
 
@@ -53,13 +53,6 @@ static void s_activate(GtkApplication* app, gpointer) {
 	static GMutex m = {};
 	if(!g_mutex_trylock(&m))
 		return;
-
-	if (list) {
-		for (Tab *t = tabs; t->f; t++) {
-			g_print("%ld %s\n", t-tabs, t->l);
-		}
-		return;
-	}
 
 	// font
 	GtkSettings *settings = gtk_settings_get_default();
@@ -112,6 +105,16 @@ static void s_activate(GtkApplication* app, gpointer) {
 
 }
 
+static gint s_handle_local_options(GApplication*, GVariantDict*, gpointer user_data) {
+	g_assert_true(!user_data);
+	if (list) {
+		for (Tab *t = tabs; t->f; t++)
+			g_print("%ld %s\n", t-tabs, t->l);
+		return 0;
+	}
+	return -1;
+}
+
 int main(int argc, char **argv) {
   g_set_application_name("toolbox_2");
   GtkApplication *app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
@@ -124,18 +127,18 @@ int main(int argc, char **argv) {
 	g_application_set_version(G_APPLICATION(app), "0.1");
 
 	// args - manual
-	auto context = g_option_context_new("@parameter_string@");
-	g_option_context_add_main_entries(context, entries, NULL);
-	g_option_context_set_help_enabled(context, TRUE);
-	g_assert_true(g_option_context_get_help_enabled(context));
-	g_assert_true(g_option_context_parse(context, &argc, &argv, NULL));
-	g_debug("%d %p %p %s", argc, argv, argv[0], argv[0]);
-  //g_set_prgname("toolbox");
-	g_option_context_free(g_steal_pointer(&context));
+	//auto context = g_option_context_new("@parameter_string@");
+	//g_option_context_add_main_entries(context, entries, NULL);
+	//g_option_context_set_help_enabled(context, TRUE);
+	//g_assert_true(g_option_context_get_help_enabled(context));
+	//g_assert_true(g_option_context_parse(context, &argc, &argv, NULL));
+	//g_debug("%d %p %p %s", argc, argv, argv[0], argv[0]);
+  ////g_set_prgname("toolbox");
+	//g_option_context_free(g_steal_pointer(&context));
 
 	// args - signal
-	// g_application_add_main_option_entries(app, entries);
-	// g_signal_connect(app, "handle-local-options",  G_CALLBACK(on_handle_local_options), NULL);
+	g_application_add_main_option_entries(G_APPLICATION(app), entries);
+	g_signal_connect(app,"handle-local-options",  G_CALLBACK(s_handle_local_options), NULL);
 
   g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
   int status = g_application_run(G_APPLICATION(app), argc, argv);
