@@ -13,23 +13,44 @@ typedef struct {
 	const char* const l;
 } Tab;
 
+// null-terminated
 static Tab tabs[] = {
 	{ &tab_welcome, "Welcome" },
 	{ &tab_base64, "Base64" },
 	{ &tab_env, "Env" },
 	{ &tab_ddc, "DDC/CI" },
-	//{ &tab_pdf, "PDF" },
+	{ &tab_pdf, "PDF" },
 	{ }
 };
+static const int N0 = sizeof(tabs)/sizeof(Tab);
+static const int N = N0 - 1;
 
 static gboolean list = FALSE;
-static const GOptionEntry entries[] = {
-	{ "list", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, "list available tabs", NULL },
-	{ } // NULL-terminated
+static int tab = -2;
+static GOptionEntry entries[] = {
+	#define DSZ 128
+	{ "list-tabs", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, (char[DSZ+1]){}, NULL },
+	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &tab, "switch to tab n, -1 for last tab", (char[DSZ+1]){}},
+	{ }
 };
+static void init_entries() {
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+	static char *s;
+	static int c;
+	c = 0;
+	s = entries[0].description;
+	c += g_snprintf(s+c, DSZ-c, "list %d available tabs", N);
+	g_assert_true(DSZ > c);
+	c = 0;
+	s = entries[1].arg_description;
+	c += g_snprintf(s+c, DSZ-c, "[0-%d-]", N-1);
+	g_assert_true(DSZ > c);
+	#pragma GCC diagnostic pop
+}
 
-static void s_switch_page(GtkNotebook*, GtkWidget*, guint page_num, gpointer) {
-	g_debug("switch from page %u to page %u", gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)), page_num);
+static void s_switch_page(GtkNotebook*, GtkWidget*, guint, gpointer) {
+	//g_debug("switch from page %u to page %u", gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)), page_num);
 	return;
 }
 
@@ -84,16 +105,12 @@ static void s_activate(GtkApplication* app, gpointer) {
 	gtk_window_present(GTK_WINDOW(window));
 
 	// notebook quick switch
-	const char *e = g_getenv("TAB");
-	if (e && e[0]) {
-		gchar *p = NULL;
-		errno = 0;
-		gint64 n = g_ascii_strtoll(e, &p, 10);
-		g_assert_true(0==errno);
-		g_assert_true(e != p);
-		g_assert_true(0 <= n);
-		g_assert_true((long long)(sizeof(tabs)/sizeof(Tab)) > n);
-		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), n);
+	if (0 <= tab) {
+		g_assert_true((long long)(N) > tab);
+		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), tab);
+	} else if (-1 == tab) {
+		_Static_assert(1 <= N, "");
+		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), N-1);
 	}
 
 	// notebook full instantiate
@@ -137,6 +154,7 @@ int main(int argc, char **argv) {
 	//g_option_context_free(g_steal_pointer(&context));
 
 	// args - signal
+	init_entries();
 	g_application_add_main_option_entries(G_APPLICATION(app), entries);
 	g_signal_connect(app,"handle-local-options",  G_CALLBACK(s_handle_local_options), NULL);
 
