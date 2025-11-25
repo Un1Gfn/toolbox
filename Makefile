@@ -68,11 +68,11 @@ gdb: all
 	gdb ./toolbox
 
 run_debug: all
-	env G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox
+	env G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox $(A)
 	@#env G_MESSAGES_DEBUG="all" ./toolbox
 
 run: all
-	./toolbox
+	./toolbox $(A)
 
 #-include $(GUI:.o=.d)
 -include $(wildcard *.d)

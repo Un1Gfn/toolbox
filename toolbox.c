@@ -19,7 +19,13 @@ static Tab tabs[] = {
 	{ &tab_env, "Env" },
 	{ &tab_ddc, "DDC/CI" },
 	{ &tab_pdf, "PDF" },
-	{ NULL, NULL }
+	{ }
+};
+
+static gboolean list = FALSE;
+static const GOptionEntry entries[] = {
+	{ "list", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, "list available tabs", NULL },
+	{ } // NULL-terminated
 };
 
 static void s_switch_page(GtkNotebook*, GtkWidget*, guint page_num, gpointer) {
@@ -33,15 +39,12 @@ static void th_func(gpointer data, gpointer userdata) {
 	g_assert_true(data);
 	Tab *t = (Tab*)data;
 	int n = t - tabs;
-	g_debug("+ [%d] = '%s'", n, t->l);
 	GtkWidget *stack = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), n);
 	g_assert_true(0 == g_strcmp0("GtkStack", g_type_name(G_OBJECT_TYPE(stack))));
 	g_assert_true(G_TYPE_CHECK_INSTANCE_TYPE(stack, GTK_TYPE_STACK));
 	GtkWidget *w = (*(t->f))();
 	g_assert_true(w);
 	gtk_stack_add_child(GTK_STACK(stack), w);
-	//g_usleep(g_random_int_range(0, 5000000));
-	g_debug("- [%d] = '%s'", n, t->l);
 }
 
 static void s_activate(GtkApplication* app, gpointer) {
@@ -50,6 +53,13 @@ static void s_activate(GtkApplication* app, gpointer) {
 	static GMutex m = {};
 	if(!g_mutex_trylock(&m))
 		return;
+
+	if (list) {
+		for (Tab *t = tabs; t->f; t++) {
+			g_print("%ld %s\n", t-tabs, t->l);
+		}
+		return;
+	}
 
 	// font
 	GtkSettings *settings = gtk_settings_get_default();
@@ -66,10 +76,9 @@ static void s_activate(GtkApplication* app, gpointer) {
 	notebook = gtk_notebook_new();
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
 	gtk_notebook_popup_enable(GTK_NOTEBOOK(notebook));
-	for (const Tab *t = tabs; t->f; t++) {
+	for (Tab *t = tabs; t->f; t++) {
 		assert((long long)(t-tabs) == (long long)gtk_notebook_append_page(
 			GTK_NOTEBOOK(notebook),
-			//(*(t->f))(),
 			gtk_stack_new(),
 			gtk_label_new(t->l)
 		));
@@ -104,7 +113,6 @@ static void s_activate(GtkApplication* app, gpointer) {
 }
 
 int main(int argc, char **argv) {
-  g_set_prgname("toolbox");
   g_set_application_name("toolbox_2");
   GtkApplication *app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
 		G_APPLICATION_DEFAULT_FLAGS
@@ -114,6 +122,21 @@ int main(int argc, char **argv) {
 		//| G_APPLICATION_REPLACE
 	);
 	g_application_set_version(G_APPLICATION(app), "0.1");
+
+	// args - manual
+	auto context = g_option_context_new("@parameter_string@");
+	g_option_context_add_main_entries(context, entries, NULL);
+	g_option_context_set_help_enabled(context, TRUE);
+	g_assert_true(g_option_context_get_help_enabled(context));
+	g_assert_true(g_option_context_parse(context, &argc, &argv, NULL));
+	g_debug("%d %p %p %s", argc, argv, argv[0], argv[0]);
+  //g_set_prgname("toolbox");
+	g_option_context_free(g_steal_pointer(&context));
+
+	// args - signal
+	// g_application_add_main_option_entries(app, entries);
+	// g_signal_connect(app, "handle-local-options",  G_CALLBACK(on_handle_local_options), NULL);
+
   g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
   int status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);
