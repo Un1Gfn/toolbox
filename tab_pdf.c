@@ -46,6 +46,7 @@ static gpointer load(gpointer do_draw) {
 	);
 	g_subprocess_communicate(subprocess, NULL, NULL, &bytes, NULL, NULL);
 	g_subprocess_wait(subprocess, NULL, NULL);
+	g_object_unref(g_steal_pointer(&subprocess));
 	document = poppler_document_new_from_bytes(bytes, NULL, NULL);
 	page = poppler_document_get_page(document, 0);
 	g_assert_true(page);
