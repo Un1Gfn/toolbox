@@ -23,12 +23,12 @@ $(foreach d, $(SO1), $(eval \
 toolbox: $(OBJ) $(SO2)
 	$(C) $(OBJ) $(shell pkg-config --libs gtk4,openssl,poppler-glib) $(SO3) -o $@
 
+# papers-view-4.0 = crash
+# evince-view-3.0 = gtk3 conflict with gtk4
+# mupdf
 tab_pdf.o \
 : \
 %.o: %.c tabs.h
-	@#$(C) -c $(shell pkg-config --cflags gtk4,papers-view-4.0) -o $@ $<  # fail
-	@#$(C) -c $(shell pkg-config --cflags gtk4,evince-view-3.0) -o $@ $<  # evince gtk3 conflict
-	@#$(C) -c $(shell pkg-config --cflags gtk4,mupdf) -o $@ $<
 	$(C) -c $(shell pkg-config --cflags gtk4,poppler-glib) -o $@ $<
 
 tab_base64.o \

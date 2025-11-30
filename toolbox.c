@@ -15,10 +15,10 @@ typedef struct {
 
 // null-terminated
 static Tab tabs[] = {
-	{ &tab_welcome, "Welcome" },
-	{ &tab_base64, "Base64" },
-	{ &tab_env, "Env" },
-	{ &tab_ddc, "DDC/CI" },
+	//{ &tab_welcome, "Welcome" },
+	//{ &tab_base64, "Base64" },
+	//{ &tab_env, "Env" },
+	//{ &tab_ddc, "DDC/CI" },
 	{ &tab_pdf, "PDF" },
 	{ }
 };

@@ -11,6 +11,7 @@ static gdouble h = 0;
 static PopplerPage *page = NULL;
 static GMutex mux = {};
 static GtkWidget *area = NULL;
+static GThread *th_load = NULL;
 
 static gpointer load(gpointer do_draw) {
 	g_debug("L0");
@@ -64,6 +65,7 @@ static gpointer load(gpointer do_draw) {
 }
 
 static void draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
+	//{ g_debug("skip_draw"); return; }
 	g_debug("D0");
 	g_mutex_lock(&mux);
 	g_assert_true(page);
@@ -91,7 +93,15 @@ static void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer) {
 		g_debug("P_");
 		return;
 	}
-	g_thread_new(NULL, load, (gpointer)1);
+	static GMutex m = { };
+	if (g_mutex_trylock(&m)) {
+		g_assert_true(!th_load);
+	} else {
+		g_assert_true(th_load);
+		g_thread_join(g_steal_pointer(&th_load));
+	}
+	th_load = g_thread_new(NULL, load, (gpointer)1);
+	g_assert_true(th_load);
 	g_debug("PZ");
 }
 
