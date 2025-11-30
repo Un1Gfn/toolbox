@@ -5,12 +5,12 @@
 #include "util.h"
 
 // acquire ddc handle
-//void new() {
+//static void new() {
 //	;
 //}
 
 // release ddc handle
-void delete() {
+static void delete() {
 	gpointer func(gpointer) {
 		//g_usleep(g_random_int_range(1000000, 3000000));
 		G_DEBUG_HERE();

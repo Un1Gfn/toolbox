@@ -4,33 +4,66 @@
 #include "tabs.h"
 
 #define MMD "/home/darren/mermaid/mindmap.mmd"
-//#define PDF "/home/darren/mermaid/mindmap.pdf"
 
 static gdouble w = 0;
 static gdouble h = 0;
 static PopplerPage *page = NULL;
-static GMutex mux = {};
 static GtkWidget *area = NULL;
-static GThread *th_load = NULL;
 
+// tab_pdf() and the first load()
+static GThread *th_tab = NULL;
+
+// s_press() and draw() always in the same thread
+static GThread *th_pd = NULL;
+
+// for th_load and th_pd
+static GMutex mux = {};
+
+/*
+
+(1) th_tab > tab_pdf()
+(2) th_tab > load()
+(3) bind - &draw - GtkDrawingArea
+(4) bind - &s_press - GtkGestureClick - GtkEventController - GtkDrawingArea
+(5) g_application_run
+(6) th_pd > draw()
+(7) th_pd > s_pressed()
+(8) th_load > load() > queue_draw()
+(9) th_pd > draw()
+
+th_tab   tab_pdf()+load()
+
+th_pd    ... draw() ... s_pressed()                         draw()
+                                   \                       /
+                                   mux                   mux
+                                     \                   /
+dynamic                               load()+queue_draw()
+
+*/
+
+// load caller lock
+// load callee unlock
 static gpointer load(gpointer do_draw) {
-	g_debug("L0");
 
-	// already locked by caller
-	g_assert_true(!g_mutex_trylock(&mux));
-
+	// init
 	static PopplerDocument *document = NULL;
 	static GBytes *bytes = NULL;
 
-	// cleanup
+	// must be already locked by caller
+	g_assert_true(!g_mutex_trylock(&mux));
+
+	g_debug("L0");
+
 	if (page) {
+		// subsequent call
 		g_assert_true(page && document && bytes);
 		g_object_unref(g_steal_pointer(&page));
 		g_object_unref(g_steal_pointer(&document));
 		g_bytes_unref(g_steal_pointer(&bytes));
-		//page = NULL;
-		//document = NULL;
-		//bytes = NULL;
+	} else {
+		// first call
+		g_assert_true(!page && !document && !bytes);
+		g_assert_true(th_tab == g_thread_self());
 	}
 
 	// run
@@ -52,7 +85,7 @@ static gpointer load(gpointer do_draw) {
 	g_assert_true(page);
 	poppler_page_get_size(page, &w, &h);
 
-	// callee unlocks
+	// load callee unlock
 	g_mutex_unlock(&mux);
 
 	if((intptr_t)do_draw) {
@@ -65,7 +98,21 @@ static gpointer load(gpointer do_draw) {
 
 }
 
+// callee lock mux
+// callee unlock mux
 static void draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
+
+	static GMutex _ = {};
+	if (g_mutex_trylock(&_)) {
+		g_assert_true(!th_pd);
+		th_pd = g_thread_self();
+		g_assert_true(th_pd);
+		g_assert_true(th_tab != th_pd);
+	} else {
+		g_assert_true(th_pd);
+		g_assert_true(th_pd == g_thread_self());
+	}
+
 	//{ g_debug("skip_draw"); return; }
 	g_debug("D0");
 	g_mutex_lock(&mux);
@@ -90,12 +137,18 @@ static void draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 
 static void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer) {
 	g_debug("P0");
+	g_assert_true(th_pd);
+	g_assert_true(th_pd == g_thread_self());
 	if(!g_mutex_trylock(&mux)) {
 		g_debug("P_");
 		return;
 	}
-	static GMutex m = { };
-	if (g_mutex_trylock(&m)) {
+	g_assert_true(th_pd);
+	g_assert_true(th_pd == g_thread_self());
+
+	static GThread *th_load = NULL;
+	static GMutex _ = { };
+	if (g_mutex_trylock(&_)) {
 		g_assert_true(!th_load);
 	} else {
 		g_assert_true(th_load);
@@ -103,31 +156,28 @@ static void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer) {
 	}
 	th_load = g_thread_new(NULL, load, (gpointer)1);
 	g_assert_true(th_load);
+
 	g_debug("PZ");
 }
 
 GtkWidget *tab_pdf() {
 
-	// init
 	area = gtk_drawing_area_new();
-	auto click = gtk_gesture_click_new();
 
-	// pen
-
-	// trigger draw - file change
-	// refer to mmwait() in /home/darren/kountdown/src/countdown.c
-
-	// initial draw
-	//gtk_widget_queue_draw(area);
-	//s_pressed(NULL, 0, 0, 0, area);
+	th_tab = g_thread_self();
+	g_assert_true(th_tab);
 
 	g_assert_true(g_mutex_trylock(&mux));
 	load((gpointer)0);
 
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw, NULL, NULL);
 
+	auto click = gtk_gesture_click_new();
 	g_signal_connect(click, "pressed", G_CALLBACK(s_pressed), area);
 	gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(click));
+
+	// trigger draw - file change
+	// refer to mmwait() in /home/darren/kountdown/src/countdown.c
 
 	return area;
 
