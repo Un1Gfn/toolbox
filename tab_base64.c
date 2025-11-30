@@ -13,7 +13,7 @@
 #define SZI (1024*1024*768+1)
 
 // encoded string
-static char enc[SZO]={};
+static gchar enc[SZO]={};
 
 // input
 static GtkEntryBuffer *buffer = NULL;
@@ -25,14 +25,14 @@ static void base64() {
 
 	// check
 	gsize _ = gtk_entry_buffer_get_bytes(buffer);
-	int n = _;
+	gint n = _;
 	assert((long long)n == (long long)_);
 	if(n >= SZI) { g_warning(G_STRLOC); return; }
 	if(n == 0) { g_warning(G_STRLOC); return; }
 	assert(n > 0);
 
 	// init
-  EVP_ENCODE_CTX *ctx=EVP_ENCODE_CTX_new();
+  EVP_ENCODE_CTX *ctx = EVP_ENCODE_CTX_new();
   assert(ctx);
   EVP_EncodeInit(ctx);
 
@@ -43,12 +43,12 @@ static void base64() {
 		(const unsigned char*)gtk_entry_buffer_get_text(buffer),
 		n
 	);
-  assert(r>=4&&r%4==0);
+  assert(r >= 4 && r % 4 == 0);
 
 	// cleanup
-  assert(0==EVP_ENCODE_CTX_num(ctx));
+  assert(0 == EVP_ENCODE_CTX_num(ctx));
   EVP_ENCODE_CTX_free(ctx);
-  ctx=NULL;
+  ctx = NULL;
 
 }
 
@@ -65,18 +65,18 @@ GtkWidget *tab_base64() {
 
 	// input
 	buffer = gtk_entry_buffer_new("animal", -1);
-	GtkWidget *entry = gtk_entry_new_with_buffer(buffer);
+	auto entry = gtk_entry_new_with_buffer(buffer);
 	//assert(gtk_widget_grab_focus(entry));
 
 	// button
-	GtkWidget *button = gtk_button_new_with_mnemonic("_base64");
+	auto button = gtk_button_new_with_mnemonic("_base64");
 	g_signal_connect(button, "clicked", G_CALLBACK(clicked), NULL);
 
 	// output
 	label = gtk_label_new(NULL);
 
 	// box of 3
-	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0 /*30*/ );
+	auto box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0 /*30*/ );
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), entry);
   gtk_box_append(GTK_BOX(box), flexiblespace());

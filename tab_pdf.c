@@ -6,8 +6,8 @@
 #define MMD "/home/darren/mermaid/mindmap.mmd"
 //#define PDF "/home/darren/mermaid/mindmap.pdf"
 
-static double w = 0;
-static double h = 0;
+static gdouble w = 0;
+static gdouble h = 0;
 static PopplerPage *page = NULL;
 static GMutex mux = {};
 static GtkWidget *area = NULL;
@@ -68,9 +68,9 @@ static void draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 	g_mutex_lock(&mux);
 	g_assert_true(page);
 	g_debug("D1");
-	double m = 0;
-	double sx = (double)w0/w;
-	double sy = (double)h0/h;
+	gdouble m = 0;
+	gdouble sx = (gdouble)w0/w;
+	gdouble sy = (gdouble)h0/h;
 	if (sx > sy) {
 		m = w0 - (w * sy);
 		cairo_translate(cr, m/2, 0);

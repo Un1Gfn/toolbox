@@ -9,8 +9,8 @@ static void clicked(GtkWidget*, gpointer) {
 }
 
 GtkWidget *tab_env() {
-	//GtkWidget *button = gtk_button_new_with_mnemonic(EE);
-	GtkWidget *button = gtk_button_new_with_label(EE);
+	//auto button = gtk_button_new_with_mnemonic(EE);
+	auto button = gtk_button_new_with_label(EE);
 	gtk_widget_set_tooltip_text(button, EE);
 	g_signal_connect(button, "clicked", G_CALLBACK(clicked), NULL);
 	return button;

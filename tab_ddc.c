@@ -23,7 +23,7 @@ void delete() {
 }
 
 GtkWidget *tab_ddc() {
-	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	auto box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), gtk_label_new("~/.local/bin/ddcutil_contrast.c"));
   gtk_box_append(GTK_BOX(box), flexiblespace());

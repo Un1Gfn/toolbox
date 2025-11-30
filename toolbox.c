@@ -22,22 +22,22 @@ static Tab tabs[] = {
 	{ &tab_pdf, "PDF" },
 	{ }
 };
-static const int N0 = sizeof(tabs)/sizeof(Tab);
-static const int N = N0 - 1;
+static const gint N0 = sizeof(tabs)/sizeof(Tab);
+static const gint N = N0 - 1;
 
 static gboolean list = FALSE;
-static int tab = -2;
+static gint tab = -2;
 static GOptionEntry entries[] = {
 	#define DSZ 128
-	{ "list-tabs", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, (char[DSZ+1]){}, NULL },
-	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &tab, "switch to tab n, -1 for last tab", (char[DSZ+1]){}},
+	{ "list-tabs", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, (gchar[DSZ+1]){}, NULL },
+	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &tab, "switch to tab n, -1 for last tab", (gchar[DSZ+1]){}},
 	{ }
 };
 static void init_entries() {
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-	static char *s;
-	static int c;
+	gchar *s = NULL;
+	gint c = -1;
 	c = 0;
 	s = entries[0].description;
 	c += g_snprintf(s+c, DSZ-c, "list %d available tabs", N);
@@ -58,12 +58,12 @@ static void s_switch_page(GtkNotebook*, GtkWidget*, guint, gpointer) {
 static void th_func(gpointer data, gpointer userdata) {
 	g_assert_true(!userdata);
 	g_assert_true(data);
-	Tab *t = (Tab*)data;
-	int n = t - tabs;
-	GtkWidget *stack = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), n);
+	auto t = (Tab*)data;
+	gint n = t - tabs;
+	auto stack = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), n);
 	g_assert_true(0 == g_strcmp0("GtkStack", g_type_name(G_OBJECT_TYPE(stack))));
 	g_assert_true(G_TYPE_CHECK_INSTANCE_TYPE(stack, GTK_TYPE_STACK));
-	GtkWidget *w = (*(t->f))();
+	auto w = (*(t->f))();
 	g_assert_true(w);
 	gtk_stack_add_child(GTK_STACK(stack), w);
 }
@@ -76,12 +76,12 @@ static void s_activate(GtkApplication* app, gpointer) {
 		return;
 
 	// font
-	GtkSettings *settings = gtk_settings_get_default();
+	auto settings = gtk_settings_get_default();
 	g_object_set(settings, "gtk-font-name", "Dejavu Sans Mono 18", NULL);
-	//g_free(settings);
+	g_object_unref(settings);
 
 	// main window
-  GtkWidget *window = gtk_application_window_new(app);
+  auto window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "Toolbox");
   gtk_window_set_default_size(GTK_WINDOW(window), 1024, 768);
   gtk_widget_set_size_request(window, 1024, 768);
@@ -90,7 +90,7 @@ static void s_activate(GtkApplication* app, gpointer) {
 	notebook = gtk_notebook_new();
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
 	gtk_notebook_popup_enable(GTK_NOTEBOOK(notebook));
-	for (Tab *t = tabs; t->f; t++) {
+	for (auto t = tabs; t->f; t++) {
 		assert((long long)(t-tabs) == (long long)gtk_notebook_append_page(
 			GTK_NOTEBOOK(notebook),
 			gtk_stack_new(),
@@ -114,8 +114,8 @@ static void s_activate(GtkApplication* app, gpointer) {
 	}
 
 	// notebook full instantiate
-	GThreadPool *pool = g_thread_pool_new(&th_func, NULL, -1, FALSE, NULL);
-	for (Tab *t = tabs; t->f; t++) {
+	auto pool = g_thread_pool_new(&th_func, NULL, -1, FALSE, NULL);
+	for (auto t = tabs; t->f; t++) {
 		g_assert_true(g_thread_pool_push(pool, t, NULL));
 	}
 	//g_thread_pool_free(pool, FALSE, TRUE);
@@ -125,7 +125,7 @@ static void s_activate(GtkApplication* app, gpointer) {
 static gint s_handle_local_options(GApplication*, GVariantDict*, gpointer user_data) {
 	g_assert_true(!user_data);
 	if (list) {
-		for (Tab *t = tabs; t->f; t++)
+		for (auto t = tabs; t->f; t++)
 			g_print("%ld %s\n", t-tabs, t->l);
 		return 0;
 	}
@@ -134,7 +134,7 @@ static gint s_handle_local_options(GApplication*, GVariantDict*, gpointer user_d
 
 int main(int argc, char **argv) {
   g_set_application_name("toolbox_2");
-  GtkApplication *app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
+  auto app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
 		G_APPLICATION_DEFAULT_FLAGS
 		| G_APPLICATION_HANDLES_OPEN
 		| G_APPLICATION_CAN_OVERRIDE_APP_ID
@@ -159,8 +159,9 @@ int main(int argc, char **argv) {
 	g_signal_connect(app,"handle-local-options",  G_CALLBACK(s_handle_local_options), NULL);
 
   g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
-  int status = g_application_run(G_APPLICATION(app), argc, argv);
+  auto const status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);
   return status;
+
 }
 
