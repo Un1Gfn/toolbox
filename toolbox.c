@@ -6,7 +6,7 @@
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
-static GtkWidget *notebook = NULL;
+static GtkWidget *notebook;
 
 typedef struct {
 	GtkWidget* (*f)();
@@ -25,7 +25,7 @@ static Tab tabs[] = {
 static const gint N0 = sizeof(tabs)/sizeof(Tab);
 static const gint N = N0 - 1;
 
-static gboolean list = FALSE;
+static gboolean list;
 static gint tab = -2;
 static GOptionEntry entries[] = {
 	#define DSZ 128
@@ -71,7 +71,7 @@ static void th_func(gpointer data, gpointer userdata) {
 static void s_activate(GtkApplication* app, gpointer) {
 
 	// run once
-	static GMutex m = {};
+	static GMutex m;
 	if(!g_mutex_trylock(&m))
 		return;
 

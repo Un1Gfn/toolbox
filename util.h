@@ -3,3 +3,4 @@
 
 GtkWidget *flexiblespace();
 
+void prompt(GtkWidget*);
