@@ -10,15 +10,15 @@ cat <<EOF
 static const gchar text[] = {
 $({ { sed "s/^/| /g"; printf "\0"; } | xxd -i; } <<"EOF2"
 
-Tips
+= TIPS =
 
-Tab popup menu
+Tab popup menu:
 
  right click any tab label
 
-Quick switch to tab N:
+Help:
 
- env TAB=N ./toolbox
+ make run_debug A="-h"
 
 Lorem ipsum:
 
@@ -29,7 +29,6 @@ EOF2
 };
 
 GtkWidget *tab_welcome() {
-	//return gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	return gtk_label_new(text);
 }
 EOF

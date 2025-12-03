@@ -5,19 +5,20 @@
 
 #define MMD "/home/darren/mermaid/mindmap.mmd"
 
-static gdouble w = 0;
-static gdouble h = 0;
-static PopplerPage *page = NULL;
-static GtkWidget *area = NULL;
+static gdouble w;
+static gdouble h;
+static PopplerPage *page;
+static GtkWidget *area;
+static GdkCursor *cursor;
 
 // tab_pdf() and the first load()
-static GThread *th_tab = NULL;
+static GThread *th_tab;
 
 // s_press() and draw() always in the same thread
-static GThread *th_pd = NULL;
+static GThread *th_pd;
 
 // for th_load and th_pd
-static GMutex mux = {};
+static GMutex mux;
 
 /*
 
@@ -46,8 +47,8 @@ dynamic                               load()+queue_draw()
 static gpointer load(gpointer do_draw) {
 
 	// init
-	static PopplerDocument *document = NULL;
-	static GBytes *bytes = NULL;
+	static PopplerDocument *document;
+	static GBytes *bytes;
 
 	// must be already locked by caller
 	g_assert_true(!g_mutex_trylock(&mux));
@@ -67,6 +68,7 @@ static gpointer load(gpointer do_draw) {
 	}
 
 	// run
+	gtk_widget_set_cursor(area, cursor);
 	auto subprocess = g_subprocess_new(
 		G_SUBPROCESS_FLAGS_STDOUT_PIPE,
 		NULL,
@@ -84,6 +86,7 @@ static gpointer load(gpointer do_draw) {
 	page = poppler_document_get_page(document, 0);
 	g_assert_true(page);
 	poppler_page_get_size(page, &w, &h);
+	gtk_widget_set_cursor(area, NULL);
 
 	// load callee unlock
 	g_mutex_unlock(&mux);
@@ -102,7 +105,7 @@ static gpointer load(gpointer do_draw) {
 // callee unlock mux
 static void draw(GtkDrawingArea*, cairo_t *cr, int w0, int h0, gpointer) {
 
-	static GMutex _ = {};
+	static GMutex _;
 	if (g_mutex_trylock(&_)) {
 		g_assert_true(!th_pd);
 		th_pd = g_thread_self();
@@ -146,15 +149,15 @@ static void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer) {
 	g_assert_true(th_pd);
 	g_assert_true(th_pd == g_thread_self());
 
-	static GThread *th_load = NULL;
-	static GMutex _ = { };
+	static GThread *th_load;
+	static GMutex _;
 	if (g_mutex_trylock(&_)) {
 		g_assert_true(!th_load);
 	} else {
 		g_assert_true(th_load);
 		g_thread_join(g_steal_pointer(&th_load));
 	}
-	th_load = g_thread_new(NULL, load, (gpointer)1);
+	th_load = g_thread_new(NULL, load, (gpointer)true);
 	g_assert_true(th_load);
 
 	g_debug("PZ");
@@ -163,12 +166,16 @@ static void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer) {
 GtkWidget *tab_pdf() {
 
 	area = gtk_drawing_area_new();
+	g_assert_true(area);
+
+	cursor = gdk_cursor_new_from_name("wait", NULL);
+	g_assert_true(cursor);
 
 	th_tab = g_thread_self();
 	g_assert_true(th_tab);
 
 	g_assert_true(g_mutex_trylock(&mux));
-	load((gpointer)0);
+	load((gpointer)false);
 
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw, NULL, NULL);
 
