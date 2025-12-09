@@ -9,12 +9,13 @@ _Static_assert(4 == GTK_MAJOR_VERSION, "");
 GtkWindow *window = NULL;
 static GtkNotebook *notebook;
 
+// notebook tab type
 typedef struct {
 	GtkWidget* (*f)();
 	const char* const l;
 } Tab;
 
-// null-terminated
+// notebook slot NULL-terminated
 static Tab tabs[] = {
 	{ &tab_welcome, "Welcome" },
 	{ &tab_base64, "Base64" },
@@ -24,9 +25,12 @@ static Tab tabs[] = {
 	{ &tab_clk, "Clock" },
 	{ }
 };
+
+// notebook tab count
 static const gint N0 = sizeof(tabs)/sizeof(Tab);
 static const gint N = N0 - 1;
 
+// arg stub
 static gboolean list;
 static gint tab = -2;
 static GOptionEntry entries[] = {
@@ -35,6 +39,8 @@ static GOptionEntry entries[] = {
 	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &tab, (gchar[DSZ+1]){}, ""},
 	{ }
 };
+
+// arg fill
 static void init_entries() {
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
@@ -59,7 +65,7 @@ static void init_entries() {
 	#pragma GCC diagnostic pop
 }
 
-// fully instantiate a tab
+// notebook tab full
 static void th_func(gpointer data, gpointer userdata) {
 	g_assert_true(!userdata);
 	g_assert_true(data);
@@ -86,12 +92,12 @@ static void s_activate(GtkApplication* app, gpointer) {
 	g_object_unref(settings);
 
 	// main window
-  window = GTK_WINDOW(gtk_application_window_new(app));
-  gtk_window_set_title(window, "Toolbox");
-  gtk_window_set_default_size(window, 1024, 768);
-  gtk_widget_set_size_request(GTK_WIDGET(window), 1024, 768);
+	window = GTK_WINDOW(gtk_application_window_new(app));
+	gtk_window_set_title(window, "Toolbox");
+	gtk_window_set_default_size(window, 1024, 768);
+	gtk_widget_set_size_request(GTK_WIDGET(window), 1024, 768);
 
-	// notebook stub
+	// notebook tab stub
 	notebook = GTK_NOTEBOOK(gtk_notebook_new());
 	gtk_notebook_set_scrollable(notebook, TRUE);
 	gtk_notebook_popup_enable(notebook);
@@ -106,7 +112,7 @@ static void s_activate(GtkApplication* app, gpointer) {
 	//gtk_widget_set_visible(window, true);
 	gtk_window_present(window);
 
-	// notebook full instantiate
+	// notebook tab full
 	auto pool = g_thread_pool_new(&th_func, NULL, -1, FALSE, NULL);
 	for (auto t = tabs; t->f; t++) {
 		g_assert_true(g_thread_pool_push(pool, t, NULL));
@@ -128,6 +134,7 @@ static void s_activate(GtkApplication* app, gpointer) {
 
 }
 
+// arg handler
 static gint s_handle_local_options(GApplication*, GVariantDict*, gpointer user_data) {
 	g_assert_true(!user_data);
 	if (list) {
@@ -139,8 +146,10 @@ static gint s_handle_local_options(GApplication*, GVariantDict*, gpointer user_d
 }
 
 int main(int argc, char **argv) {
-  g_set_application_name("toolbox_2");
-  auto app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
+
+	// app metadata
+	g_set_application_name("toolbox_2");
+	auto app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
 		G_APPLICATION_DEFAULT_FLAGS
 		| G_APPLICATION_HANDLES_OPEN
 		| G_APPLICATION_CAN_OVERRIDE_APP_ID
@@ -149,25 +158,26 @@ int main(int argc, char **argv) {
 	);
 	g_application_set_version(G_APPLICATION(app), "0.1");
 
-	// args - manual
+	// arg manual
 	//auto context = g_option_context_new("@parameter_string@");
 	//g_option_context_add_main_entries(context, entries, NULL);
 	//g_option_context_set_help_enabled(context, TRUE);
 	//g_assert_true(g_option_context_get_help_enabled(context));
 	//g_assert_true(g_option_context_parse(context, &argc, &argv, NULL));
 	//g_debug("%d %p %p %s", argc, argv, argv[0], argv[0]);
-  ////g_set_prgname("toolbox");
+	////g_set_prgname("toolbox");
 	//g_option_context_free(g_steal_pointer(&context));
 
-	// args - signal
+	// arg signal
 	init_entries();
 	g_application_add_main_option_entries(G_APPLICATION(app), entries);
 	g_signal_connect(app,"handle-local-options",  G_CALLBACK(s_handle_local_options), NULL);
 
-  g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
-  auto status = g_application_run(G_APPLICATION(app), argc, argv);
-  g_object_unref(app);
-  return status;
+	// app run
+	g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
+	auto status = g_application_run(G_APPLICATION(app), argc, argv);
+	g_object_unref(app);
+	return status;
 
 }
 

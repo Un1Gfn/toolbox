@@ -64,17 +64,18 @@ purge:
 	$(MAKE) clean
 	@{ for i in $(SO1); do $(MAKE) -C $$i purge || true; done; } 2>/dev/null 1>/dev/null
 
-.PHONY: run_debug debug
+.PHONY: run run_debug run_gdb
 
-run_gdb: all
-	gdb --args ./toolbox $(A)
+run: all
+	./toolbox $(A)
 
 run_debug: all
 	env G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox $(A)
 	@#env G_MESSAGES_DEBUG="all" ./toolbox
 
-run: all
-	./toolbox $(A)
+run_gdb: all
+	env G_MESSAGES_DEBUG="$(DOMAIN)" gdb --args ./toolbox $(A)
+
 
 #-include $(GUI:.o=.d)
 -include $(wildcard *.d)

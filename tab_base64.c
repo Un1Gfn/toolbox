@@ -32,23 +32,23 @@ static void base64() {
 	assert(n > 0);
 
 	// init
-  auto ctx = EVP_ENCODE_CTX_new();
-  assert(ctx);
-  EVP_EncodeInit(ctx);
+	auto ctx = EVP_ENCODE_CTX_new();
+	assert(ctx);
+	EVP_EncodeInit(ctx);
 
 	// calculate
 	bzero(enc, SZO);
-  const int r = EVP_EncodeBlock(
+	const int r = EVP_EncodeBlock(
 		(unsigned char*)enc,
 		(const unsigned char*)gtk_entry_buffer_get_text(buffer),
 		n
 	);
-  assert(r >= 4 && r % 4 == 0);
+	assert(r >= 4 && r % 4 == 0);
 
 	// cleanup
-  assert(0 == EVP_ENCODE_CTX_num(ctx));
-  EVP_ENCODE_CTX_free(ctx);
-  ctx = NULL;
+	assert(0 == EVP_ENCODE_CTX_num(ctx));
+	EVP_ENCODE_CTX_free(ctx);
+	ctx = NULL;
 
 }
 
@@ -77,13 +77,13 @@ GtkWidget *tab_base64() {
 
 	// box of 3
 	auto box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0 /*30*/ );
-  gtk_box_append(GTK_BOX(box), flexiblespace());
+	gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), entry);
-  gtk_box_append(GTK_BOX(box), flexiblespace());
+	gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), button);
-  gtk_box_append(GTK_BOX(box), flexiblespace());
+	gtk_box_append(GTK_BOX(box), flexiblespace());
 	gtk_box_append(GTK_BOX(box), label);
-  gtk_box_append(GTK_BOX(box), flexiblespace());
+	gtk_box_append(GTK_BOX(box), flexiblespace());
 	//gtk_widget_grab_focus(entry);
 	//gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entry));
 

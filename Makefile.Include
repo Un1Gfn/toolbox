@@ -1,14 +1,13 @@
 MAKEFLAGS := --no-print-directory -j30
 DOMAIN := Toolbox
 
-#C := gcc -std=gnu23 -O3 -Wall -Wextra -fpic -fPIC -MMD -MP -DG_LOG_DOMAIN=\"$(DOMAIN)\" $(CFLAGS)
+# make CFLAGS="-fsanitize=address"
+# make CFLAGS="-fsanitize=thread"
 
 C := gcc -std=gnu23 -g -Og
 C := $(C) -MMD -MP
 C := $(C) -fanalyzer -fpic -fpie -fPIC -fPIE
 C := $(C) -Wall -Wextra
-#C := $(C) -fsanitize=address
-#C := $(C) -fsanitize=thread
 C := $(C) -DG_LOG_DOMAIN=\"$(DOMAIN)\"
 C := $(C) $(CFLAGS)
 
