@@ -8,7 +8,7 @@ GtkWidget *flexiblespace() {
 	return _;
 }
 
-void prompt(GtkWidget *widget) {
+void signals(GtkWidget *widget) {
 
 	g_assert_true(GTK_IS_WIDGET(widget));
 

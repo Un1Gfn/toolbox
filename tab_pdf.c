@@ -218,7 +218,7 @@ static void s_pressed(GtkGestureClick*, gint, gdouble, gdouble, gpointer) {
 		g_assert_true(th_load);
 		g_thread_join(g_steal_pointer(&th_load));
 	}
-	g_assert_true((th_load = g_thread_new(NULL, load, (gpointer)true)));
+	g_assert_true((th_load = g_thread_new("th_load", load, (gpointer)true)));
 	g_debug("%s() Z", G_STRFUNC);
 }
 

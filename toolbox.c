@@ -6,6 +6,7 @@
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
+GtkWindow *window = NULL;
 static GtkNotebook *notebook;
 
 typedef struct {
@@ -85,10 +86,10 @@ static void s_activate(GtkApplication* app, gpointer) {
 	g_object_unref(settings);
 
 	// main window
-  auto window = gtk_application_window_new(app);
-  gtk_window_set_title(GTK_WINDOW(window), "Toolbox");
-  gtk_window_set_default_size(GTK_WINDOW(window), 1024, 768);
-  gtk_widget_set_size_request(window, 1024, 768);
+  window = GTK_WINDOW(gtk_application_window_new(app));
+  gtk_window_set_title(window, "Toolbox");
+  gtk_window_set_default_size(window, 1024, 768);
+  gtk_widget_set_size_request(GTK_WIDGET(window), 1024, 768);
 
 	// notebook stub
 	notebook = GTK_NOTEBOOK(gtk_notebook_new());
@@ -101,9 +102,9 @@ static void s_activate(GtkApplication* app, gpointer) {
 			gtk_label_new(t->l)
 		));
 	}
-	gtk_window_set_child(GTK_WINDOW(window), GTK_WIDGET(notebook));
+	gtk_window_set_child(window, GTK_WIDGET(notebook));
 	//gtk_widget_set_visible(window, true);
-	gtk_window_present(GTK_WINDOW(window));
+	gtk_window_present(window);
 
 	// notebook full instantiate
 	auto pool = g_thread_pool_new(&th_func, NULL, -1, FALSE, NULL);
@@ -164,7 +165,7 @@ int main(int argc, char **argv) {
 	g_signal_connect(app,"handle-local-options",  G_CALLBACK(s_handle_local_options), NULL);
 
   g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
-  auto const status = g_application_run(G_APPLICATION(app), argc, argv);
+  auto status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);
   return status;
 

@@ -13,13 +13,13 @@
 #define SZI (1024*1024*768+1)
 
 // encoded string
-static gchar enc[SZO]={};
+static gchar enc[SZO];
 
 // input
-static GtkEntryBuffer *buffer = NULL;
+static GtkEntryBuffer *buffer;
 
 // output
-static GtkWidget *label = NULL;
+static GtkWidget *label;
 
 static void base64() {
 
@@ -32,7 +32,7 @@ static void base64() {
 	assert(n > 0);
 
 	// init
-  EVP_ENCODE_CTX *ctx = EVP_ENCODE_CTX_new();
+  auto ctx = EVP_ENCODE_CTX_new();
   assert(ctx);
   EVP_EncodeInit(ctx);
 
@@ -60,7 +60,7 @@ static void clicked(GtkWidget*, gpointer) {
 GtkWidget *tab_base64() {
 
 	// run once
-	static GMutex m = {};
+	static GMutex m;
 	assert(g_mutex_trylock(&m));
 
 	// input

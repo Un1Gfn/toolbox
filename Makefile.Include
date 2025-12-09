@@ -3,9 +3,18 @@ DOMAIN := Toolbox
 
 #C := gcc -std=gnu23 -O3 -Wall -Wextra -fpic -fPIC -MMD -MP -DG_LOG_DOMAIN=\"$(DOMAIN)\" $(CFLAGS)
 
-C := gcc -std=gnu23 -g -Og -Wall -Wextra -fanalyzer -fpic -fPIC -MMD -MP -DG_LOG_DOMAIN=\"$(DOMAIN)\" $(CFLAGS)
+C := gcc -std=gnu23 -g -Og
+C := $(C) -MMD -MP
+C := $(C) -fanalyzer -fpic -fpie -fPIC -fPIE
+C := $(C) -Wall -Wextra
 #C := $(C) -fsanitize=address
 #C := $(C) -fsanitize=thread
+C := $(C) -DG_LOG_DOMAIN=\"$(DOMAIN)\"
+C := $(C) $(CFLAGS)
+
+# /usr/bin/ld: warning: tab_clk.o: requires executable stack (because the .note.GNU-stack section is executable)
+# nested function does not work with noexecstack
+#C := $(C) -Whardened -fhardened
 
 #SO1 := libcangjie5
 #SO2 := libcangjie5/libcangjie5.so

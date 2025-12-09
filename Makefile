@@ -79,3 +79,4 @@ run: all
 #-include $(GUI:.o=.d)
 -include $(wildcard *.d)
 
+.EXTRA_PREREQS := Makefile Makefile.Include
