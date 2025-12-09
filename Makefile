@@ -3,6 +3,7 @@
 # alphabetical orer
 OBJ := $(addsuffix .o, \
  tab_base64 \
+ tab_clk \
  tab_ddc \
  tab_env \
  tab_pdf \
@@ -32,6 +33,7 @@ tab_pdf.o \
 	$(C) -c $(shell pkg-config --cflags gtk4,poppler-glib) -o $@ $<
 
 tab_base64.o \
+tab_clk.o \
 tab_ddc.o \
 tab_env.o \
 tab_welcome.o \
@@ -64,8 +66,8 @@ purge:
 
 .PHONY: run_debug debug
 
-gdb: all
-	gdb ./toolbox
+run_gdb: all
+	gdb --args ./toolbox $(A)
 
 run_debug: all
 	env G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox $(A)

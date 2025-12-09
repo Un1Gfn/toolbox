@@ -20,7 +20,7 @@ dynamic                               load(+queue_draw())
 
 ********************************************************************************/
 
-//#undef G_LOG_DOMAIN
+#undef G_LOG_DOMAIN
 
 #include <gtk/gtk.h>
 #include <poppler.h>
@@ -87,7 +87,7 @@ static gpointer load(gpointer do_draw) {
 
 	// spawn
 	gtk_widget_set_cursor(area, cursor);
-	g_printerr(" "); g_print("\n");
+	//g_printerr(" "); g_print("\n");
 	subprocess = g_subprocess_new(
 		G_SUBPROCESS_FLAGS_STDOUT_PIPE,
 		NULL,
@@ -102,7 +102,7 @@ static gpointer load(gpointer do_draw) {
 	g_subprocess_communicate(subprocess, NULL, NULL, &bytes2, NULL, NULL);
 	g_subprocess_wait(subprocess, NULL, NULL);
 	g_assert_true(bytes2);
-	g_printerr(" "); g_print("\n");
+	//g_printerr(" "); g_print("\n");
 
 	// status
 	//status(subprocess);

@@ -6,7 +6,7 @@
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
-static GtkWidget *notebook;
+static GtkNotebook *notebook;
 
 typedef struct {
 	GtkWidget* (*f)();
@@ -20,6 +20,7 @@ static Tab tabs[] = {
 	{ &tab_env, "Env" },
 	{ &tab_ddc, "DDC/CI" },
 	{ &tab_pdf, "PDF" },
+	{ &tab_clk, "Clock" },
 	{ }
 };
 static const gint N0 = sizeof(tabs)/sizeof(Tab);
@@ -30,28 +31,31 @@ static gint tab = -2;
 static GOptionEntry entries[] = {
 	#define DSZ 128
 	{ "list-tabs", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, (gchar[DSZ+1]){}, NULL },
-	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &tab, "switch to tab n, -1 for last tab", (gchar[DSZ+1]){}},
+	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &tab, (gchar[DSZ+1]){}, ""},
 	{ }
 };
 static void init_entries() {
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-	gchar *s = NULL;
-	gint c = -1;
+	static gchar *s;
+	static gint c;
+
 	c = 0;
 	s = entries[0].description;
 	c += g_snprintf(s+c, DSZ-c, "list %d available tabs", N);
 	g_assert_true(DSZ > c);
-	c = 0;
-	s = entries[1].arg_description;
-	c += g_snprintf(s+c, DSZ-c, "[0-%d-]", N-1);
-	g_assert_true(DSZ > c);
-	#pragma GCC diagnostic pop
-}
 
-static void s_switch_page(GtkNotebook*, GtkWidget*, guint, gpointer) {
-	//g_debug("switch from page %u to page %u", gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)), page_num);
-	return;
+	c = 0;
+	s = entries[1].description;
+	c += g_snprintf(s+c, DSZ-c, "switch to tab 0..%d(-1)", N-1);
+	g_assert_true(DSZ > c);
+
+	//c = 0;
+	//s = entries[1].arg_description;
+	//c += g_snprintf(s+c, DSZ-c, "[0-%d-]", N-1);
+	//g_assert_true(DSZ > c);
+
+	#pragma GCC diagnostic pop
 }
 
 // fully instantiate a tab
@@ -60,7 +64,7 @@ static void th_func(gpointer data, gpointer userdata) {
 	g_assert_true(data);
 	auto t = (Tab*)data;
 	gint n = t - tabs;
-	auto stack = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), n);
+	auto stack = gtk_notebook_get_nth_page(notebook, n);
 	g_assert_true(0 == g_strcmp0("GtkStack", g_type_name(G_OBJECT_TYPE(stack))));
 	g_assert_true(G_TYPE_CHECK_INSTANCE_TYPE(stack, GTK_TYPE_STACK));
 	auto w = (*(t->f))();
@@ -87,38 +91,39 @@ static void s_activate(GtkApplication* app, gpointer) {
   gtk_widget_set_size_request(window, 1024, 768);
 
 	// notebook stub
-	notebook = gtk_notebook_new();
-	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
-	gtk_notebook_popup_enable(GTK_NOTEBOOK(notebook));
+	notebook = GTK_NOTEBOOK(gtk_notebook_new());
+	gtk_notebook_set_scrollable(notebook, TRUE);
+	gtk_notebook_popup_enable(notebook);
 	for (auto t = tabs; t->f; t++) {
 		assert((long long)(t-tabs) == (long long)gtk_notebook_append_page(
-			GTK_NOTEBOOK(notebook),
+			notebook,
 			gtk_stack_new(),
 			gtk_label_new(t->l)
 		));
 	}
-	g_signal_connect(notebook, "switch-page", G_CALLBACK(s_switch_page), NULL);
-	gtk_window_set_child(GTK_WINDOW(window), notebook);
-	
-	// show
-  //gtk_widget_set_visible(window, true);
+	gtk_window_set_child(GTK_WINDOW(window), GTK_WIDGET(notebook));
+	//gtk_widget_set_visible(window, true);
 	gtk_window_present(GTK_WINDOW(window));
-
-	// notebook quick switch
-	if (0 <= tab) {
-		g_assert_true((long long)(N) > tab);
-		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), tab);
-	} else if (-1 == tab) {
-		_Static_assert(1 <= N, "");
-		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), N-1);
-	}
 
 	// notebook full instantiate
 	auto pool = g_thread_pool_new(&th_func, NULL, -1, FALSE, NULL);
 	for (auto t = tabs; t->f; t++) {
 		g_assert_true(g_thread_pool_push(pool, t, NULL));
 	}
-	//g_thread_pool_free(pool, FALSE, TRUE);
+
+	// notebook arg switch
+	// g_idle_add avoid pango segfault
+	_Static_assert(1 <= N, "");
+	gboolean i_func(gpointer userdata) {
+		gtk_notebook_set_current_page(notebook, (int)(intptr_t)userdata);
+		return G_SOURCE_REMOVE;
+	}
+	if (0 <= tab) {
+		g_assert_true((long long)(N) > tab);
+		g_idle_add(i_func, (gpointer)(intptr_t)tab);
+	} else if (-1 == tab) {
+		g_idle_add(i_func, (gpointer)(intptr_t)N-1);
+	}
 
 }
 
