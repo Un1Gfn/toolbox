@@ -3,38 +3,58 @@
 #include <gtk/gtk.h>
 #include "tabs.h"
 #include "util.h"
+#include "libclk/libclk.h"
 
 #define SZ 1024
 
 #define A(X) { if (X) ; else { alert(G_STRLOC); return; } }
 
 static GtkEntryBuffer *buffer;
-static GtkWidget *label_et, *label_ev, *label_uv;
-static GMutex running;
+static GtkWidget *label_libevent, *label_libev, *label_nanosleep;
+static GMutex change_state;
+
+static TickNanosleep *tick_nanosleep;
+static TickLibev *tick_libev;
+static TickLibevent *tick_libevent;
+
+static GDateTime *until;
 
 static void alert(const char *const message) {
-
 	g_warning(message);
-
 	static const char *labels[] = {
 		[0] = "default",
 		[1] = "cancel",
 		[2] = "...",
 		NULL
 	};
-
-	//auto dialog = gtk_alert_dialog_new("");
-	//gtk_alert_dialog_set_message(dialog, message);
-	//gtk_alert_dialog_set_detail(dialog, message);
-
+	/*
+	auto dialog = gtk_alert_dialog_new("");
+	gtk_alert_dialog_set_message(dialog, message);
+	gtk_alert_dialog_set_detail(dialog, message):
+	*/
 	auto dialog = gtk_alert_dialog_new("%s", message);
-
 	gtk_alert_dialog_set_modal(dialog, true);
 	gtk_alert_dialog_set_buttons(dialog, labels);
 	gtk_alert_dialog_set_default_button(dialog, 0);
 	gtk_alert_dialog_set_cancel_button(dialog, 1);
-
 	gtk_alert_dialog_show(dialog, window);
+}
+
+static void callback(void *userdata) {
+
+	g_assert_true(userdata);
+	auto label = GTK_LABEL(userdata);
+
+	auto now = g_date_time_new_now_local();
+	auto diff = g_date_time_difference(until, now);
+	g_date_time_unref(g_steal_pointer(&now));
+
+	auto text = g_strdup_printf("%ld", diff);
+	g_assert_true(text && text[0]);
+
+	g_debug("tick %p", label);
+	gtk_label_set_text(label, text);
+	g_free(g_steal_pointer(&text));
 
 }
 
@@ -52,16 +72,70 @@ static void start(GtkEntry*, gpointer) {
 	A(':' == s[2]);
 	A('0' <= s[3] && s[3] <= '5');
 	A('0' <= s[4] && s[4] <= '9');
-	A(g_mutex_trylock(&running));
 
-	g_message("running...");
+	g_mutex_lock(&change_state);
+
+	// 01234567890123456789012345678
+	// 2025-12-10T14:35:28.074179+08
+
+	// now iso8601
+	auto now = g_date_time_new_now_local();
+	g_assert_true(now);
+	gchar *iso = g_date_time_format_iso8601(now);
+	g_assert_true(iso && 29 == strnlen(iso, 30));
+	g_date_time_unref(g_steal_pointer(&now));
+
+	// until iso8601
+	//g_debug("%s", iso);
+	g_assert_true(memcpy(iso + 11, s, 5) == iso + 11);
+	//g_debug("%s", iso);
+	g_assert_true(memcpy(iso + 16, ":00.000000", 9) == iso + 16);
+	//g_debug("%s", iso);
+
+	// until datetime
+	auto default_tz = g_time_zone_new_local();
+	g_assert_true(default_tz);
+	until = g_date_time_new_from_iso8601(iso, default_tz);
+	g_assert_true(until);
+	g_free(g_steal_pointer(&iso));
+
+	// until iso8601 verify
+	iso = g_date_time_format_iso8601(until);
+	g_debug("%s", iso);
+	g_free(g_steal_pointer(&iso));
+
+	// timezone destroy
+	g_time_zone_unref(g_steal_pointer(&default_tz));
+
+	if (tick_nanosleep) {
+		alert(G_STRLOC);
+	} else {
+		tick_nanosleep = tick_nanosleep_new(&callback, label_nanosleep);
+		g_assert_true(tick_nanosleep);
+		g_message("running...");
+	}
+
+	g_mutex_unlock(&change_state);
 
 }
 
 static void stop() {
-	A(!g_mutex_trylock(&running));
-	g_mutex_unlock(&running);
-	g_message("stoped");
+
+	if(!g_mutex_trylock(&change_state))
+		return;
+
+	if (tick_nanosleep) {
+		tick_nanosleep_destroy(&tick_nanosleep);
+		g_assert_true(!tick_nanosleep);
+		g_assert_true(until);
+		g_date_time_unref(g_steal_pointer(&until));
+		g_message("stoped");
+	} else {
+		alert(G_STRLOC);
+	}
+
+	g_mutex_unlock(&change_state);
+
 }
 
 static void s_icon_press(GtkEntry* entry, GtkEntryIconPosition pos, gpointer userdata) {
@@ -82,19 +156,19 @@ GtkWidget *tab_clk() {
 	g_signal_connect(entry, "activate", G_CALLBACK(start), NULL);
 	g_signal_connect(entry, "icon-press", G_CALLBACK(s_icon_press), NULL);
 
-	label_et = gtk_label_new("libevent =");
-	label_ev = gtk_label_new("libev =");
-	label_uv = gtk_label_new("libuv =");
+	label_nanosleep = gtk_label_new("nanosleep =");
+	label_libev = gtk_label_new("libev =");
+	label_libevent = gtk_label_new("libevent =");
 
 	auto box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 	gtk_box_append(box, flexiblespace());
 	gtk_box_append(box, entry);
 	gtk_box_append(box, flexiblespace());
-	gtk_box_append(box, label_et);
+	gtk_box_append(box, label_nanosleep);
 	gtk_box_append(box, flexiblespace());
-	gtk_box_append(box, label_ev);
+	gtk_box_append(box, label_libev);
 	gtk_box_append(box, flexiblespace());
-	gtk_box_append(box, label_uv);
+	gtk_box_append(box, label_libevent);
 	gtk_box_append(box, flexiblespace());
 	return GTK_WIDGET(box);
 

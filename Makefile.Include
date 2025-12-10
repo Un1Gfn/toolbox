@@ -1,22 +1,47 @@
 MAKEFLAGS := --no-print-directory -j30
 DOMAIN := Toolbox
 
-# make CFLAGS="-fsanitize=address"
-# make CFLAGS="-fsanitize=thread"
 
-C := gcc -std=gnu23 -g -Og
-C := $(C) -MMD -MP
-C := $(C) -fanalyzer -fpic -fpie -fPIC -fPIE
-C := $(C) -Wall -Wextra
-C := $(C) -DG_LOG_DOMAIN=\"$(DOMAIN)\"
-C := $(C) $(CFLAGS)
+# driver
+C := gcc
 
-# /usr/bin/ld: warning: tab_clk.o: requires executable stack (because the .note.GNU-stack section is executable)
-# nested function does not work with noexecstack
-#C := $(C) -Whardened -fhardened
+# standard
+C := $C -std=gnu23 -g -Og -Wall -Wextra
+
+# macro
+C := $C -DG_LOG_DOMAIN=\"$(DOMAIN)\"
+
+# header dependency
+C := $C -MMD -MP
+
+# -f
+C := $C -fanalyzer -fpie -fPIE -fpic -fPIC
+
+# misc
+C := $C -pthread
+C := $C $(CFLAGS)
+
+# sanitizer
+# SUMMARY: AddressSanitizer: 1440841 byte(s) leaked in 33326 allocation(s).
+C := $C -fsanitize=address
+# C := $C -fsanitize=thread
+# C := $C -fsanitize=undefined
+
+#SO := cangjie5 clk
+SO := clk
 
 #SO1 := libcangjie5
-#SO2 := libcangjie5/libcangjie5.so
-#SO3 := -Wl,-rpath,\$$ORIGIN/libcangjie5 -L libcangjie5 -lcangjie5
-L :=  $(SO3)
+SO1 := $(addprefix lib,$(SO))
 
+#SO2 := libcangjie5/libcangjie5.so
+SO2 := $(foreach x,$(SO),lib$x/lib$x.so)
+
+c:=,
+#SO3 := -Wl,-rpath,\$$ORIGIN/libcangjie5 -L libcangjie5 -lcangjie5
+SO3 := $(addprefix -Wl$c-rpath$c\$$ORIGIN/,$(SO1)) $(addprefix -L ,$(SO1)) $(addprefix -l,$(SO))
+
+ifeq ($(wildcard Makefile.Include),)
+ .EXTRA_PREREQS := Makefile ../Makefile.Include
+else
+ .EXTRA_PREREQS := Makefile Makefile.Include
+endif

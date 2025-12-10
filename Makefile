@@ -12,6 +12,12 @@ OBJ := $(addsuffix .o, \
  util \
 )
 
+#test:
+#	@echo '$(SO)'
+#	@echo '$(SO1)'
+#	@echo '$(SO2)'
+#	@echo '$(SO3)'
+
 all: $(SO1)
 	@$(MAKE) toolbox
 
@@ -22,7 +28,7 @@ $(foreach d, $(SO1), $(eval \
 ))
 
 toolbox: $(OBJ) $(SO2)
-	$(C) $(OBJ) $(shell pkg-config --libs gtk4,openssl,poppler-glib) $(SO3) -o $@
+	$(C) $(OBJ) $(shell pkg-config --libs gtk4,openssl,poppler-glib) -lev $(SO3) -o $@
 
 # papers-view-4.0 = crash
 # evince-view-3.0 = gtk3 conflict with gtk4
@@ -76,8 +82,5 @@ run_debug: all
 run_gdb: all
 	env G_MESSAGES_DEBUG="$(DOMAIN)" gdb --args ./toolbox $(A)
 
-
 #-include $(GUI:.o=.d)
 -include $(wildcard *.d)
-
-.EXTRA_PREREQS := Makefile Makefile.Include
