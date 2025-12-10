@@ -119,17 +119,16 @@ static void s_activate(GtkApplication* app, gpointer) {
 	}
 
 	// notebook arg switch
-	// g_idle_add avoid pango segfault
+	// idle avoid pango segmentation fault
 	_Static_assert(1 <= N, "");
-	gboolean i_func(gpointer userdata) {
+	void _(gpointer userdata) {
 		gtk_notebook_set_current_page(notebook, (int)(intptr_t)userdata);
-		return G_SOURCE_REMOVE;
 	}
 	if (0 <= tab) {
 		g_assert_true((long long)(N) > tab);
-		g_idle_add(i_func, (gpointer)(intptr_t)tab);
+		g_idle_add_once(&_, (gpointer)(intptr_t)tab);
 	} else if (-1 == tab) {
-		g_idle_add(i_func, (gpointer)(intptr_t)N-1);
+		g_idle_add_once(&_, (gpointer)(intptr_t)N-1);
 	}
 
 }

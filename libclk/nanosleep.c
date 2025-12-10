@@ -4,11 +4,22 @@
 #include <stdlib.h>
 #include "libclk.h"
 
+/*
+// opaque
+typedef struct TickNanosleep TickNanosleep;
 struct TickNanosleep {
 	void *userdata;
 	void (*callback)(void*);
 	pthread_t thread;
 };
+*/
+
+// private
+typedef struct {
+	void *userdata;
+	void (*callback)(void*);
+	pthread_t thread;
+} TickNanosleep;
 
 static void *start_routine(TickNanosleep *t){
 	for (;;) {
@@ -28,7 +39,7 @@ static void *start_routine(TickNanosleep *t){
 	return (void*)-2;
 }
 
-TickNanosleep *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
+void *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
 
 	TickNanosleep *t = calloc(1, sizeof(TickNanosleep));
 
@@ -53,7 +64,7 @@ TickNanosleep *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
 
 }
 
-void tick_nanosleep_destroy(TickNanosleep **p) {
+void tick_nanosleep_destroy(void** p) {
 
 	TickNanosleep *t = *p;
 

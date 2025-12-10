@@ -23,7 +23,7 @@ C := $C $(CFLAGS)
 
 # sanitizer
 # SUMMARY: AddressSanitizer: 1440841 byte(s) leaked in 33326 allocation(s).
-C := $C -fsanitize=address
+#C := $C -fsanitize=address
 # C := $C -fsanitize=thread
 # C := $C -fsanitize=undefined
 

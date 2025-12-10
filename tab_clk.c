@@ -10,14 +10,29 @@
 #define A(X) { if (X) ; else { alert(G_STRLOC); return; } }
 
 static GtkEntryBuffer *buffer;
-static GtkWidget *label_libevent, *label_libev, *label_nanosleep;
-static GMutex change_state;
-
-static TickNanosleep *tick_nanosleep;
-static TickLibev *tick_libev;
-static TickLibevent *tick_libevent;
-
 static GDateTime *until;
+static GMutex change_state;
+static gboolean running;
+
+// order!
+typedef struct {
+	const char *name;
+	GtkWidget *label;
+	void *tick;
+	New *new;
+	Destroy *destroy;
+} Clk;
+
+// order!
+static Clk clk[] = {
+	{ "nanosleep", NULL, NULL, &tick_nanosleep_new, &tick_nanosleep_destroy },
+	//{ "libev", NULL, NULL, &tick_libev_new, &tick_libev_destroy },
+	//{ "libevent", NULL, NULL, &tick_libevent_new, &tick_libevent_destroy },
+	{ }
+};
+
+// loop
+#define Foreach() for (Clk *c = clk; c->name; c++)
 
 static void alert(const char *const message) {
 	g_warning(message);
@@ -53,7 +68,7 @@ static void callback(void *userdata) {
 	g_assert_true(text && text[0]);
 
 	g_debug("tick %p", label);
-	gtk_label_set_text(label, text);
+	gtk_label_set_text(GTK_LABEL(label), text);
 	g_free(g_steal_pointer(&text));
 
 }
@@ -75,8 +90,10 @@ static void start(GtkEntry*, gpointer) {
 
 	g_mutex_lock(&change_state);
 
-	// 01234567890123456789012345678
-	// 2025-12-10T14:35:28.074179+08
+	if (running) {
+		alert(G_STRLOC);
+		goto err;
+	}
 
 	// now iso8601
 	auto now = g_date_time_new_now_local();
@@ -107,14 +124,16 @@ static void start(GtkEntry*, gpointer) {
 	// timezone destroy
 	g_time_zone_unref(g_steal_pointer(&default_tz));
 
-	if (tick_nanosleep) {
-		alert(G_STRLOC);
-	} else {
-		tick_nanosleep = tick_nanosleep_new(&callback, label_nanosleep);
-		g_assert_true(tick_nanosleep);
-		g_message("running...");
+	// tick new
+	Foreach() {
+		g_assert_true(!c->tick);
+		c->tick = c->new(&callback, c->label);
+		g_assert_true(c->tick);
 	}
 
+	g_message("running...");
+
+	err:
 	g_mutex_unlock(&change_state);
 
 }
@@ -124,17 +143,23 @@ static void stop() {
 	if(!g_mutex_trylock(&change_state))
 		return;
 
-	if (tick_nanosleep) {
-		tick_nanosleep_destroy(&tick_nanosleep);
-		g_assert_true(!tick_nanosleep);
-		g_assert_true(until);
-		g_date_time_unref(g_steal_pointer(&until));
-		g_message("stoped");
-	} else {
+	if (!running) {
 		alert(G_STRLOC);
+		goto stop_err;
 	}
 
-	g_mutex_unlock(&change_state);
+	Foreach() {
+		g_assert_true(c->tick);
+		c->destroy(&(c->tick));
+		g_assert_true(!c->tick);
+	}
+
+	g_assert_true(until);
+	g_date_time_unref(g_steal_pointer(&until));
+	g_message("stoped");
+
+	stop_err:
+		g_mutex_unlock(&change_state);
 
 }
 
@@ -156,20 +181,18 @@ GtkWidget *tab_clk() {
 	g_signal_connect(entry, "activate", G_CALLBACK(start), NULL);
 	g_signal_connect(entry, "icon-press", G_CALLBACK(s_icon_press), NULL);
 
-	label_nanosleep = gtk_label_new("nanosleep =");
-	label_libev = gtk_label_new("libev =");
-	label_libevent = gtk_label_new("libevent =");
-
 	auto box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 	gtk_box_append(box, flexiblespace());
 	gtk_box_append(box, entry);
+
+	Foreach() {
+		gtk_box_append(box, flexiblespace());
+		c->label = gtk_label_new(c->name);
+		gtk_box_append(box, c->label);
+	}
+
 	gtk_box_append(box, flexiblespace());
-	gtk_box_append(box, label_nanosleep);
-	gtk_box_append(box, flexiblespace());
-	gtk_box_append(box, label_libev);
-	gtk_box_append(box, flexiblespace());
-	gtk_box_append(box, label_libevent);
-	gtk_box_append(box, flexiblespace());
+
 	return GTK_WIDGET(box);
 
 }

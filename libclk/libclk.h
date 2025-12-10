@@ -9,14 +9,14 @@
 	#endif
 #endif
 
-typedef struct TickNanosleep TickNanosleep;
-TickNanosleep *tick_nanosleep_new(void (*)(void*), void*);
-void tick_nanosleep_destroy(TickNanosleep**);
+typedef void *New(void (*)(void*), void*);
+typedef void Destroy(void**);
 
-typedef struct TickLibev TickLibev;
-TickLibev *tick_libev_new(void (*)(void*), void*);
-void tick_libev_destroy(TickLibev**);
+#define DECL(x) \
+	New tick_##x##_new; \
+	Destroy tick_##x##_destroy;
 
-typedef struct TickLibevent TickLibevent;
-TickLibevent *tick_libevent_new(void (*)(void*), void*);
-void tick_libevent_destroy(TickLibevent**);
+DECL(nanosleep);
+//DECL(libev);
+//DECL(libevent);
+
