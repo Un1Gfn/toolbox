@@ -11,15 +11,8 @@
 
 // release ddc handle
 static void delete() {
-	gpointer func(gpointer) {
-		//g_usleep(g_random_int_range(1000000, 3000000));
-		G_DEBUG_HERE();
-		return NULL;
-	}
-	func(NULL);
-	//GThread *thread = g_thread_new(NULL, func, NULL);
-	//g_assert_true(thread);
-	//g_thread_join(thread);
+	//g_usleep(g_random_int_range(1000000, 3000000));
+	G_DEBUG_HERE();
 }
 
 GtkWidget *tab_ddc() {

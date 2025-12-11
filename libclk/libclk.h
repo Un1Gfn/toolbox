@@ -16,7 +16,7 @@ typedef void Destroy(void**);
 	New tick_##x##_new; \
 	Destroy tick_##x##_destroy;
 
-DECL(nanosleep);
-//DECL(libev);
-//DECL(libevent);
+DECL(nanosleep)
+//DECL(libev)
+//DECL(libevent)
 

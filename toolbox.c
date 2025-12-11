@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include <assert.h>
 #include "tabs.h"
+#include "util.h"
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
@@ -32,11 +33,11 @@ static const gint N = N0 - 1;
 
 // arg stub
 static gboolean list;
-static gint tab = -2;
+static gint to_tab = -2;
 static GOptionEntry entries[] = {
 	#define DSZ 128
 	{ "list-tabs", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, (gchar[DSZ+1]){}, NULL },
-	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &tab, (gchar[DSZ+1]){}, ""},
+	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &to_tab, (gchar[DSZ+1]){}, ""},
 	{ }
 };
 
@@ -77,6 +78,12 @@ static void th_func(gpointer data, gpointer userdata) {
 	auto w = (*(t->f))();
 	g_assert_true(w);
 	gtk_stack_add_child(GTK_STACK(stack), w);
+}
+
+// do not dispatch nested function to g_idle_add_once
+// avoid out of scope calling
+void idle(gpointer userdata) {
+	gtk_notebook_set_current_page(notebook, (intptr_t)userdata);
 }
 
 static void s_activate(GtkApplication* app, gpointer) {
@@ -121,14 +128,13 @@ static void s_activate(GtkApplication* app, gpointer) {
 	// notebook arg switch
 	// idle avoid pango segmentation fault
 	_Static_assert(1 <= N, "");
-	void _(gpointer userdata) {
-		gtk_notebook_set_current_page(notebook, (int)(intptr_t)userdata);
-	}
-	if (0 <= tab) {
-		g_assert_true((long long)(N) > tab);
-		g_idle_add_once(&_, (gpointer)(intptr_t)tab);
-	} else if (-1 == tab) {
-		g_idle_add_once(&_, (gpointer)(intptr_t)N-1);
+	if (0 <= to_tab) {
+		g_assert_true((long long)(N) > to_tab);
+		g_idle_add_once(&idle, (gpointer)(intptr_t)to_tab);
+	} else if (-1 == to_tab) {
+		g_idle_add_once(&idle, (gpointer)(intptr_t)(N-1));
+	} else {
+		g_assert_true(-2 == to_tab);
 	}
 
 }

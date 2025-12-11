@@ -1,12 +1,12 @@
 MAKEFLAGS := --no-print-directory -j30
 DOMAIN := Toolbox
 
-
 # driver
 C := gcc
 
 # standard
 C := $C -std=gnu23 -g -Og -Wall -Wextra
+#C := $C -Wpedantic
 
 # macro
 C := $C -DG_LOG_DOMAIN=\"$(DOMAIN)\"
@@ -22,8 +22,8 @@ C := $C -pthread
 C := $C $(CFLAGS)
 
 # sanitizer
-# SUMMARY: AddressSanitizer: 1440841 byte(s) leaked in 33326 allocation(s).
-#C := $C -fsanitize=address
+# 1440585 / 33314
+# C := $C -fsanitize=address
 # C := $C -fsanitize=thread
 # C := $C -fsanitize=undefined
 
