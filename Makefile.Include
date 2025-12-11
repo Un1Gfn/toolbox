@@ -23,9 +23,9 @@ C := $C $(CFLAGS)
 
 # sanitizer
 # 1440585 / 33314
-# C := $C -fsanitize=address
-# C := $C -fsanitize=thread
-# C := $C -fsanitize=undefined
+C := $C -fsanitize=address
+#C := $C -fsanitize=thread
+#C := $C -fsanitize=undefined
 
 #SO := cangjie5 clk
 SO := clk

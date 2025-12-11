@@ -184,6 +184,8 @@ GtkWidget *tab_clk() {
 
 	buffer = gtk_entry_buffer_new("21:00", -1); // OK
 	auto entry = gtk_entry_new_with_buffer(buffer);
+	g_object_unref(buffer); // crash?
+
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_SECONDARY, "alarm-symbolic");
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_PRIMARY, "media-playback-stop-symbolic");
 	g_signal_connect(entry, "activate", G_CALLBACK(start), NULL);

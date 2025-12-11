@@ -67,22 +67,38 @@ static void init_entries() {
 }
 
 // notebook tab full
+
+typedef struct { GtkWidget* stack; GtkWidget *widget; } SW;
+
+static void idle_stack(gpointer userdata) {
+	auto sw = (SW*)userdata;
+	gtk_stack_add_child(GTK_STACK(sw->stack), sw->widget);
+	g_free(sw);
+}
+
 static void th_func(gpointer data, gpointer userdata) {
+
+	// prepare
 	g_assert_true(!userdata);
 	g_assert_true(data);
 	auto t = (Tab*)data;
-	gint n = t - tabs;
-	auto stack = gtk_notebook_get_nth_page(notebook, n);
-	g_assert_true(0 == g_strcmp0("GtkStack", g_type_name(G_OBJECT_TYPE(stack))));
-	g_assert_true(G_TYPE_CHECK_INSTANCE_TYPE(stack, GTK_TYPE_STACK));
-	auto w = (*(t->f))();
-	g_assert_true(w);
-	gtk_stack_add_child(GTK_STACK(stack), w);
+	SW *sw = g_malloc0(sizeof(SW));
+
+	sw->widget = (*(t->f))();
+	g_assert_true(sw->widget);
+
+	sw->stack = gtk_notebook_get_nth_page(notebook, t - tabs);
+	g_assert_true(sw->stack);
+	g_assert_true(G_TYPE_CHECK_INSTANCE_TYPE(sw->stack, GTK_TYPE_STACK));
+	g_assert_true(0 == g_strcmp0("GtkStack", g_type_name(G_OBJECT_TYPE(sw->stack))));
+
+	g_idle_add_once(&idle_stack, sw);
+
 }
 
 // do not dispatch nested function to g_idle_add_once
 // avoid out of scope calling
-void idle(gpointer userdata) {
+void idle_switch(gpointer userdata) {
 	gtk_notebook_set_current_page(notebook, (intptr_t)userdata);
 }
 
@@ -130,9 +146,9 @@ static void s_activate(GtkApplication* app, gpointer) {
 	_Static_assert(1 <= N, "");
 	if (0 <= to_tab) {
 		g_assert_true((long long)(N) > to_tab);
-		g_idle_add_once(&idle, (gpointer)(intptr_t)to_tab);
+		g_idle_add_once(&idle_switch, (gpointer)(intptr_t)to_tab);
 	} else if (-1 == to_tab) {
-		g_idle_add_once(&idle, (gpointer)(intptr_t)(N-1));
+		g_idle_add_once(&idle_switch, (gpointer)(intptr_t)(N-1));
 	} else {
 		g_assert_true(-2 == to_tab);
 	}
