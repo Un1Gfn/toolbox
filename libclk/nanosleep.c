@@ -28,11 +28,11 @@ static void *start_routine(TickNanosleep *t){
 		clock_gettime(CLOCK_REALTIME, &ts);
 		ts.tv_sec = 0;
 		ts.tv_nsec = -ts.tv_nsec + 1000000000;
-		nanosleep(&ts, NULL);
+		nanosleep(&ts, nullptr);
 
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 		t->callback(t->userdata);
-		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
 
 	}
 	_Static_assert(PTHREAD_CANCELED == (void*)-1, "");
@@ -51,7 +51,7 @@ void *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
 	t->userdata = userdata;
 	t->callback = callback;
 
-	if (0 != pthread_create(&(t->thread), NULL, (void*(*)(void*))start_routine, t))
+	if (0 != pthread_create(&(t->thread), nullptr, (void*(*)(void*))start_routine, t))
 		goto error;
 
 	G_DEBUG_HERE();
@@ -60,7 +60,7 @@ void *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
 
 	error:
 		free(t);
-		return NULL;
+		return nullptr;
 
 }
 
@@ -71,7 +71,7 @@ void tick_nanosleep_destroy(void** p) {
 	if (0 != pthread_cancel(t->thread))
 		return;
 
-	void *_ = NULL;
+	void *_ = nullptr;
 
 	if (0 != pthread_join(t->thread, &_))
 		return;
@@ -80,6 +80,6 @@ void tick_nanosleep_destroy(void** p) {
 		return;
 
 	free(*p);
-	*p = NULL;
+	*p = nullptr;
 
 }

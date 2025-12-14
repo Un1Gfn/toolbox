@@ -7,7 +7,7 @@
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
-GtkWindow *window = NULL;
+GtkWindow *window = nullptr;
 static GtkNotebook *notebook;
 
 // notebook tab type
@@ -16,7 +16,7 @@ typedef struct {
 	const char* const l;
 } Tab;
 
-// notebook slot NULL-terminated
+// notebook slot nullptr-terminated
 static Tab tabs[] = {
 	{ &tab_welcome, "Welcome" },
 	{ &tab_base64, "Base64" },
@@ -36,7 +36,7 @@ static gboolean list;
 static gint to_tab = -2;
 static GOptionEntry entries[] = {
 	#define DSZ 128
-	{ "list-tabs", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, (gchar[DSZ+1]){}, NULL },
+	{ "list-tabs", 'l', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &list, (gchar[DSZ+1]){}, nullptr },
 	{ "tab", 't', G_OPTION_FLAG_NONE, G_OPTION_ARG_INT, &to_tab, (gchar[DSZ+1]){}, ""},
 	{ }
 };
@@ -111,7 +111,7 @@ static void s_activate(GtkApplication* app, gpointer) {
 
 	// font
 	auto settings = gtk_settings_get_default();
-	g_object_set(settings, "gtk-font-name", "Dejavu Sans Mono 18", NULL);
+	g_object_set(settings, "gtk-font-name", "Dejavu Sans Mono 18", nullptr);
 	g_object_unref(settings);
 
 	// main window
@@ -136,9 +136,9 @@ static void s_activate(GtkApplication* app, gpointer) {
 	gtk_window_present(window);
 
 	// notebook tab full
-	auto pool = g_thread_pool_new(&th_func, NULL, -1, FALSE, NULL);
+	auto pool = g_thread_pool_new(&th_func, nullptr, -1, FALSE, nullptr);
 	for (auto t = tabs; t->f; t++) {
-		g_assert_true(g_thread_pool_push(pool, t, NULL));
+		g_assert_true(g_thread_pool_push(pool, t, nullptr));
 	}
 
 	// notebook arg switch
@@ -181,10 +181,10 @@ int main(int argc, char **argv) {
 
 	// arg manual
 	//auto context = g_option_context_new("@parameter_string@");
-	//g_option_context_add_main_entries(context, entries, NULL);
+	//g_option_context_add_main_entries(context, entries, nullptr);
 	//g_option_context_set_help_enabled(context, TRUE);
 	//g_assert_true(g_option_context_get_help_enabled(context));
-	//g_assert_true(g_option_context_parse(context, &argc, &argv, NULL));
+	//g_assert_true(g_option_context_parse(context, &argc, &argv, nullptr));
 	//g_debug("%d %p %p %s", argc, argv, argv[0], argv[0]);
 	////g_set_prgname("toolbox");
 	//g_option_context_free(g_steal_pointer(&context));
@@ -192,10 +192,10 @@ int main(int argc, char **argv) {
 	// arg signal
 	init_entries();
 	g_application_add_main_option_entries(G_APPLICATION(app), entries);
-	g_signal_connect(app,"handle-local-options",  G_CALLBACK(s_handle_local_options), NULL);
+	g_signal_connect(app,"handle-local-options",  G_CALLBACK(s_handle_local_options), nullptr);
 
 	// app run
-	g_signal_connect(app, "activate", G_CALLBACK(s_activate), NULL);
+	g_signal_connect(app, "activate", G_CALLBACK(s_activate), nullptr);
 	auto status = g_application_run(G_APPLICATION(app), argc, argv);
 	g_object_unref(app);
 	return status;

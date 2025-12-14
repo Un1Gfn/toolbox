@@ -12,7 +12,7 @@ GtkWidget *tab_env() {
 	//auto button = gtk_button_new_with_mnemonic(EE);
 	auto button = gtk_button_new_with_label(EE);
 	gtk_widget_set_tooltip_text(button, EE);
-	g_signal_connect(button, "clicked", G_CALLBACK(clicked), NULL);
+	g_signal_connect(button, "clicked", G_CALLBACK(clicked), nullptr);
 	return button;
 	//return gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 }

@@ -16,8 +16,8 @@
 
 #define CLK(X) { \
 	.name = xstr(X), \
-	.label = NULL, \
-	.tick = NULL, \
+	.label = nullptr, \
+	.tick = nullptr, \
 	.new = &tick_##X##_new, \
 	.destroy = &tick_##X##_destroy \
 }
@@ -49,7 +49,7 @@ static void alert(const char *const message) {
 		[0] = "default",
 		[1] = "cancel",
 		[2] = "...",
-		NULL
+		nullptr
 	};
 	/*
 	auto dialog = gtk_alert_dialog_new("");
@@ -202,8 +202,8 @@ GtkWidget *tab_clk() {
 
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_SECONDARY, "alarm-symbolic");
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_PRIMARY, "media-playback-stop-symbolic");
-	g_signal_connect(entry, "activate", G_CALLBACK(start), NULL);
-	g_signal_connect(entry, "icon-press", G_CALLBACK(s_icon_press), NULL);
+	g_signal_connect(entry, "activate", G_CALLBACK(start), nullptr);
+	g_signal_connect(entry, "icon-press", G_CALLBACK(s_icon_press), nullptr);
 	gtk_box_append(box, entry);
 
 	// foreach label

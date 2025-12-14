@@ -54,7 +54,7 @@ generate() {
 		local L=($l)
 		printf "\t[%s] = { .n = %s, .e=(const char *[]){" "${L[0]}" "$(("${#L[@]}"-1))"
 		printf '"%s", ' "${L[@]:1}"
-		printf "NULL} },\n"
+		printf "nullptr} },\n"
 	done
 	printf "\t[0] = {}\n"
 	printf "};\n"

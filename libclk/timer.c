@@ -24,9 +24,9 @@ void *tick_timer_new(void (*cb)(void*), void *d) {
 
 	// create timer
 	if (EMPTY != timerid)
-		return NULL;
-	if (0 != timer_create(CLOCK_REALTIME, NULL, &timerid))
-		return NULL;
+		return nullptr;
+	if (0 != timer_create(CLOCK_REALTIME, nullptr, &timerid))
+		return nullptr;
 	callback = cb;
 	userdata = d;
 
@@ -34,16 +34,16 @@ void *tick_timer_new(void (*cb)(void*), void *d) {
 	if (0 != timer_settime(timerid, 0, &(struct itimerspec){
 		.it_interval = { .tv_sec = 1, .tv_nsec = 0 },
 		.it_value = { .tv_sec = 1, .tv_nsec = 0 }
-	}, NULL))
-		return NULL;
+	}, nullptr))
+		return nullptr;
 
 	// arm
 	if (0 != sigaction(SIGALRM, &(struct sigaction){
 		.sa_handler = &handler,
 		.sa_mask = {},
 		.sa_flags = 0
-	}, NULL))
-		return NULL;
+	}, nullptr))
+		return nullptr;
 
 	return (void*)(intptr_t)(1);
 
@@ -57,7 +57,7 @@ void tick_timer_destroy(void **p) {
 	if (0 != timer_delete(timerid))
 		return;
 	timerid = EMPTY;
-	*p = NULL;
-	callback = NULL;
-	userdata = NULL;
+	*p = nullptr;
+	callback = nullptr;
+	userdata = nullptr;
 }

@@ -48,7 +48,7 @@ static void base64() {
 	// cleanup
 	assert(0 == EVP_ENCODE_CTX_num(ctx));
 	EVP_ENCODE_CTX_free(ctx);
-	ctx = NULL;
+	ctx = nullptr;
 
 }
 
@@ -70,10 +70,10 @@ GtkWidget *tab_base64() {
 
 	// button
 	auto button = gtk_button_new_with_mnemonic("_base64");
-	g_signal_connect(button, "clicked", G_CALLBACK(clicked), NULL);
+	g_signal_connect(button, "clicked", G_CALLBACK(clicked), nullptr);
 
 	// output
-	label = gtk_label_new(NULL);
+	label = gtk_label_new(nullptr);
 
 	// box of 3
 	auto box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0 /*30*/ );

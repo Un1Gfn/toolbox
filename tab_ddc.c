@@ -26,7 +26,7 @@ GtkWidget *tab_ddc() {
 	gtk_box_append(b, flexiblespace());
 	gtk_box_append(b, gtk_label_new("contrast"));
 	gtk_box_append(b, flexiblespace());
-	g_signal_connect(w, "destroy", delete, NULL);
+	g_signal_connect(w, "destroy", delete, nullptr);
 	return w;
 }
 

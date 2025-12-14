@@ -90,17 +90,17 @@ static gpointer load(gpointer do_draw) {
 	//g_printerr(" "); g_print("\n");
 	subprocess = g_subprocess_new(
 		G_SUBPROCESS_FLAGS_STDOUT_PIPE,
-		NULL,
+		nullptr,
 		"/usr/bin/mmdc",
 		"-i", MMD,
 		"-e", "pdf",
 		"-f",
 		"-o", "-",
-		NULL
+		nullptr
 	);
-	GBytes *bytes2 = NULL;
-	g_subprocess_communicate(subprocess, NULL, NULL, &bytes2, NULL, NULL);
-	g_subprocess_wait(subprocess, NULL, NULL);
+	GBytes *bytes2 = nullptr;
+	g_subprocess_communicate(subprocess, nullptr, nullptr, &bytes2, nullptr, nullptr);
+	g_subprocess_wait(subprocess, nullptr, nullptr);
 	g_assert_true(bytes2);
 	//g_printerr(" "); g_print("\n");
 
@@ -135,14 +135,14 @@ static gpointer load(gpointer do_draw) {
 	// update pdf
 	if (success) {
 		bytes = bytes2;
-		g_assert_true((document = poppler_document_new_from_bytes(bytes, NULL, NULL)));
+		g_assert_true((document = poppler_document_new_from_bytes(bytes, nullptr, nullptr)));
 		g_assert_true((page = poppler_document_get_page(document, 0)));
 		poppler_page_get_size(page, &w, &h);
 	}
 	g_debug("%s @%ld", G_STRLOC, (intptr_t)page);
 
 	// callee unlock
-	gtk_widget_set_cursor(area, NULL);
+	gtk_widget_set_cursor(area, nullptr);
 	g_mutex_unlock(&mux);
 
 	// optional draw
@@ -151,7 +151,7 @@ static gpointer load(gpointer do_draw) {
 	}
 
 	g_debug("%s() Z", G_STRFUNC);
-	return NULL;
+	return nullptr;
 
 }
 
@@ -239,14 +239,14 @@ GtkWidget *tab_pdf() {
 	load((gpointer)false);
 
 	// load and draw
-	g_assert_true((cursor = gdk_cursor_new_from_name("wait", NULL)));
-	gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw, NULL, NULL);
+	g_assert_true((cursor = gdk_cursor_new_from_name("wait", nullptr)));
+	gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area), draw, nullptr, nullptr);
 	auto click = gtk_gesture_click_new();
 	g_signal_connect(click, "pressed", G_CALLBACK(s_pressed), area);
 	gtk_widget_add_controller(area, GTK_EVENT_CONTROLLER(click));
 
 	// cleanup
-	g_signal_connect(area, "destroy", G_CALLBACK(s_destroy), NULL);
+	g_signal_connect(area, "destroy", G_CALLBACK(s_destroy), nullptr);
 
 	// trigger draw - file change
 	// refer to mmwait() in /home/darren/kountdown/src/countdown.c
