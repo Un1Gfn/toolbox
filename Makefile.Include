@@ -5,7 +5,7 @@ DOMAIN := Toolbox
 C := gcc
 
 # standard
-C := $C -std=gnu23 -g -Og -Wall -Wextra
+C := $C -std=gnu23 -g -O0 -Wall -Wextra
 #C := $C -Wpedantic
 
 # macro

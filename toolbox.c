@@ -143,7 +143,7 @@ static void s_activate(GtkApplication* app, gpointer) {
 
 	// notebook arg switch
 	// idle avoid pango segmentation fault
-	_Static_assert(1 <= N, "");
+	g_assert_true(1 <= N);
 	if (0 <= to_tab) {
 		g_assert_true((long long)(N) > to_tab);
 		g_idle_add_once(&idle_switch, (gpointer)(intptr_t)to_tab);

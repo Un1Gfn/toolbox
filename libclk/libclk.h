@@ -16,7 +16,20 @@ typedef void Destroy(void**);
 	New tick_##x##_new; \
 	Destroy tick_##x##_destroy;
 
-DECL(nanosleep)
-//DECL(libev)
-//DECL(libevent)
+// nanosleep implementation
+DECL(nanosleep);
+
+// timer_create implementation, singleton
+//bool tick_timer_start(void (*)(void*), void*);
+//bool tick_timer_stop();
+DECL(timer);
+
+// timerfd_create implementation
+//DECL(timerfd);
+
+// libev implementation
+//DECL(libev);
+
+// libevent implementation
+//DECL(libevent);
 

@@ -31,30 +31,17 @@ static gboolean s2b(GtkWidget *self, gpointer userdata) {
 	return false;
 }
 
-static gboolean s6b(GtkWidget* self, gint, gint, gboolean, GtkTooltip*, gpointer userdata) {
+static gboolean s3b(GtkWidget *self, int32_t, gpointer userdata) {
 	return s2b(self, userdata);
 }
 
-static gboolean s3b(GtkWidget *self, int32_t, gpointer userdata) {
+static gboolean s6b(GtkWidget* self, gint, gint, gboolean, GtkTooltip*, gpointer userdata) {
 	return s2b(self, userdata);
 }
 
 void signals(GtkWidget *widget) {
 
 	g_assert_true(GTK_IS_WIDGET(widget));
-
-	/*
-	#define CONCAT_IMPL(a, b) a##b
-	#define CONCAT(a, b) CONCAT_IMPL(a, b)
-	#define C(I, S) C0(I, S, CONCAT(s_, __COUNTER__))
-	#define C0(I, S, N) { \
-		void N(GtkWidget *widget, gpointer) { \
-			g_debug("+ %s::%s", G_OBJECT_TYPE_NAME(widget), S); \
-			g_debug("- %s::%s", G_OBJECT_TYPE_NAME(widget), S); \
-		} \
-		g_signal_connect(I, S, G_CALLBACK(N), NULL); \
-	}
-	*/
 
 	#define C(H, S) g_signal_connect(widget, S, G_CALLBACK(H), S);
 

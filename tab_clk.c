@@ -9,12 +9,19 @@
 
 #define A(X) { if (X) ; else { alert(G_STRLOC); return; } }
 
-static GtkEntryBuffer *buffer;
-static GDateTime *until;
-static GMutex change_state;
-static gboolean running;
+#define Foreach() for (Clk *c = clk; c->name; c++)
 
-// order!
+#define xstr(s) str(s)
+#define str(s) #s
+
+#define CLK(X) { \
+	.name = xstr(X), \
+	.label = NULL, \
+	.tick = NULL, \
+	.new = &tick_##X##_new, \
+	.destroy = &tick_##X##_destroy \
+}
+
 typedef struct {
 	const char *name;
 	GtkWidget *label;
@@ -23,16 +30,18 @@ typedef struct {
 	Destroy *destroy;
 } Clk;
 
-// order!
 static Clk clk[] = {
-	{ "nanosleep", NULL, NULL, &tick_nanosleep_new, &tick_nanosleep_destroy },
-	//{ "libev", NULL, NULL, &tick_libev_new, &tick_libev_destroy },
-	//{ "libevent", NULL, NULL, &tick_libevent_new, &tick_libevent_destroy },
+	CLK(nanosleep),
+	CLK(timer),
+	//CLK(libev),
+	//CLK(libevent),
 	{ }
 };
 
-// loop
-#define Foreach() for (Clk *c = clk; c->name; c++)
+static GtkEntryBuffer *buffer;
+static GDateTime *until;
+static GMutex change_state;
+static gboolean running;
 
 static void alert(const char *const message) {
 	g_warning(message);
@@ -68,7 +77,7 @@ static void callback(void *userdata) {
 	auto text = g_strdup_printf("%ld", diff);
 	g_assert_true(text && text[0]);
 
-	g_debug("tick %p", label);
+	//g_debug("tick %p", label);
 	gtk_label_set_text(GTK_LABEL(label), text);
 	g_free(g_steal_pointer(&text));
 
@@ -127,7 +136,10 @@ static void start(GtkEntry*, gpointer) {
 	// timezone destroy
 	g_time_zone_unref(g_steal_pointer(&default_tz));
 
-	// tick new
+	// foreach start
+	Foreach() {
+		gtk_label_set_text(GTK_LABEL(c->label), "...");
+	}
 	Foreach() {
 		g_assert_true(!c->tick);
 		c->tick = c->new(&callback, c->label);
@@ -153,10 +165,12 @@ static void stop() {
 
 	running = false;
 
+	// foreach stop
 	Foreach() {
 		g_assert_true(c->tick);
 		c->destroy(&(c->tick));
 		g_assert_true(!c->tick);
+		gtk_label_set_text(GTK_LABEL(c->label), c->name);
 	}
 
 	g_assert_true(until);
@@ -192,6 +206,7 @@ GtkWidget *tab_clk() {
 	g_signal_connect(entry, "icon-press", G_CALLBACK(s_icon_press), NULL);
 	gtk_box_append(box, entry);
 
+	// foreach label
 	Foreach() {
 		gtk_box_append(box, flexiblespace());
 		c->label = gtk_label_new(c->name);

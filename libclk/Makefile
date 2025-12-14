@@ -1,18 +1,19 @@
 -include ../Makefile.Include
 
-libclk.so: nanosleep.o libevent.o libev.o
+libclk.so: nanosleep.o timer.o
 	$(C) -shared -o $@ $^
 
+#libev.o
+timer.o \
 nanosleep.o \
-libev.o \
 : \
 %.o: %.c
 	$(C) -c -o $@ $<
 
-libevent.o \
-: \
-%.o: %.c
-	$(C) -c $(shell pkg-config --cflags libevent) -o $@ $<
+#libevent.o \
+#: \
+#%.o: %.c
+#	$(C) -c $(shell pkg-config --cflags libevent) -o $@ $<
 
 .PHONY: clean
 
