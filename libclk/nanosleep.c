@@ -24,15 +24,16 @@ typedef struct {
 static void *start_routine(TickNanosleep *t){
 	for (;;) {
 
+		// immediate
+		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
+		t->callback(t->userdata);
+		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
+
 		struct timespec ts = {};
 		clock_gettime(CLOCK_REALTIME, &ts);
 		ts.tv_sec = 0;
 		ts.tv_nsec = -ts.tv_nsec + 1000000000;
 		nanosleep(&ts, nullptr);
-
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
-		t->callback(t->userdata);
-		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
 
 	}
 	_Static_assert(PTHREAD_CANCELED == (void*)-1, "");
@@ -46,15 +47,11 @@ void *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
 	if (!t)
 		goto error;
 
-	G_DEBUG_HERE();
-
 	t->userdata = userdata;
 	t->callback = callback;
 
 	if (0 != pthread_create(&(t->thread), nullptr, (void*(*)(void*))start_routine, t))
 		goto error;
-
-	G_DEBUG_HERE();
 
 	return t;
 

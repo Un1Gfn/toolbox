@@ -1,11 +1,10 @@
--include ../Makefile.Include
-
-libclk.so: nanosleep.o timer.o
+libclk.so: nanosleep.o timer.o timerfd.o
 	$(C) -shared -o $@ $^
 
 #libev.o
-timer.o \
 nanosleep.o \
+timer.o \
+timerfd.o \
 : \
 %.o: %.c
 	$(C) -c -o $@ $<
@@ -19,3 +18,5 @@ nanosleep.o \
 
 clean:
 	rm -f *.so *.o *.d 2>/dev/null || true
+
+-include ../Makefile.Include

@@ -44,7 +44,7 @@ static GMutex change_state;
 static gboolean running;
 
 static void alert(const char *const message) {
-	g_warning(message);
+	//g_warning(message);
 	static const char *labels[] = {
 		[0] = "default",
 		[1] = "cancel",
@@ -65,21 +65,38 @@ static void alert(const char *const message) {
 	g_object_unref(g_steal_pointer(&dialog));
 }
 
+
+typedef struct {
+	GtkLabel *label;
+	gchar *text;
+} I;
+
+static void idle(gpointer userdata) {
+	I *i = userdata;
+	//g_debug("tick %p", i->label);
+	gtk_label_set_text(i->label, i->text);
+	g_free(i->text);
+	g_free(i);
+}
+
 static void callback(void *userdata) {
 
 	g_assert_true(userdata);
-	auto label = GTK_LABEL(userdata);
+
+	I *i = g_malloc0(sizeof(I));
+
+	i->label = GTK_LABEL(userdata);
 
 	auto now = g_date_time_new_now_local();
 	auto diff = g_date_time_difference(until, now);
 	g_date_time_unref(g_steal_pointer(&now));
 
-	auto text = g_strdup_printf("%ld", diff);
-	g_assert_true(text && text[0]);
+	i->text = g_strdup_printf("%ld", diff);
+	g_assert_true(i->text && i->text[0]);
 
-	//g_debug("tick %p", label);
-	gtk_label_set_text(GTK_LABEL(label), text);
-	g_free(g_steal_pointer(&text));
+	// (toolbox:...): GLib-GObject-CRITICAL **: ...: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
+	// (toolbox:...): Pango-WARNING **: ...: Invalid UTF-8 string passed to pango_layout_set_text()
+	g_idle_add_once(&idle, i);
 
 }
 

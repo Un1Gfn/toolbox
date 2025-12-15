@@ -9,6 +9,13 @@
 	#endif
 #endif
 
+// immediate
+#define ONESEC \
+	(struct itimerspec){ \
+		.it_interval = { .tv_sec = 1, .tv_nsec = 0 }, \
+		.it_value = { .tv_sec = 0, .tv_nsec = 1 } \
+	}
+
 typedef void *New(void (*)(void*), void*);
 typedef void Destroy(void**);
 
@@ -32,4 +39,3 @@ DECL(timer);
 
 // libevent implementation
 //DECL(libevent);
-

@@ -31,10 +31,7 @@ void *tick_timer_new(void (*cb)(void*), void *d) {
 	userdata = d;
 
 	// configure timeout
-	if (0 != timer_settime(timerid, 0, &(struct itimerspec){
-		.it_interval = { .tv_sec = 1, .tv_nsec = 0 },
-		.it_value = { .tv_sec = 1, .tv_nsec = 0 }
-	}, nullptr))
+	if (0 != timer_settime(timerid, 0, &ONESEC, nullptr))
 		return nullptr;
 
 	// arm

@@ -23,21 +23,21 @@ C := $C $(CFLAGS)
 
 # sanitizer
 # 1440585 / 33314
-C := $C -fsanitize=address
+#C := $C -fsanitize=address
 #C := $C -fsanitize=thread
 #C := $C -fsanitize=undefined
 
 #SO := cangjie5 clk
 SO := clk
 
-#SO1 := libcangjie5
+#SO1 := libfoo libbar
 SO1 := $(addprefix lib,$(SO))
 
-#SO2 := libcangjie5/libcangjie5.so
+#SO2 := libfoo/libfoo.so libbar/libbar.so
 SO2 := $(foreach x,$(SO),lib$x/lib$x.so)
 
 c:=,
-#SO3 := -Wl,-rpath,\$$ORIGIN/libcangjie5 -L libcangjie5 -lcangjie5
+#SO3 := -Wl,-rpath,\$$ORIGIN/libfoo -Wl,-rpath,\$$ORIGIN/libbar -L libfoo -L libbar -lfoo -lbar
 SO3 := $(addprefix -Wl$c-rpath$c\$$ORIGIN/,$(SO1)) $(addprefix -L ,$(SO1)) $(addprefix -l,$(SO))
 
 ifeq ($(wildcard Makefile.Include),)
@@ -45,3 +45,6 @@ ifeq ($(wildcard Makefile.Include),)
 else
  .EXTRA_PREREQS := Makefile Makefile.Include
 endif
+
+#-include $(GUI:.o=.d)
+-include $(wildcard *.d)
