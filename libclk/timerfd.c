@@ -29,6 +29,4 @@ void *tick_timerfd_new(void (*callback)(void*), void *userdata) {
 	
 }
 
-void tick_timerfd_destroy(void** p) {
-
-}
+//void tick_timerfd_destroy(void** p) { }

@@ -7,6 +7,9 @@
 
 #define SZ 1024
 
+#define UEPOCH "1970-01-01T00:00:00.000000Z"
+#define SEPOCH "1970-01-01T00:00:00Z"
+
 #define A(X) { if (X) ; else { alert(G_STRLOC); return; } }
 
 #define Foreach() for (Clk *c = clk; c->name; c++)
@@ -39,6 +42,7 @@ static Clk clk[] = {
 };
 
 static GtkEntryBuffer *buffer;
+static GDateTime *epoch;
 static GDateTime *until;
 static GMutex change_state;
 static gboolean running;
@@ -84,16 +88,35 @@ static void callback(void *userdata) {
 	g_assert_true(userdata);
 
 	I *i = g_malloc0(sizeof(I));
-
 	i->label = GTK_LABEL(userdata);
 
+	// diff
 	auto now = g_date_time_new_now_local();
-	auto diff = g_date_time_difference(until, now);
-	g_date_time_unref(g_steal_pointer(&now));
+	GTimeSpan delta = g_date_time_difference(until, now);
+	auto diff = g_date_time_add(epoch, delta);
 
-	i->text = g_strdup_printf("%ld", diff);
+	// human readable diff
+	auto s = g_date_time_format_iso8601(diff);
+	g_assert_true(27 == strnlen(s, 28));
+
+	// fill hud
+	i->text = g_strdup_printf(
+		"%.0lfm ^ "
+		"%.5s"
+		//" %.0lfs"
+	"%s",
+		(double)delta/60000000.0,
+		s + 11,
+		//(double)delta/1000000.0,
+	"");
 	g_assert_true(i->text && i->text[0]);
 
+	// cleanup
+	g_free(g_steal_pointer(&s));
+	g_date_time_unref(g_steal_pointer(&diff));
+	g_date_time_unref(g_steal_pointer(&now));
+
+	// render hud
 	// (toolbox:...): GLib-GObject-CRITICAL **: ...: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
 	// (toolbox:...): Pango-WARNING **: ...: Invalid UTF-8 string passed to pango_layout_set_text()
 	g_idle_add_once(&idle, i);
@@ -153,6 +176,25 @@ static void start(GtkEntry*, gpointer) {
 	// timezone destroy
 	g_time_zone_unref(g_steal_pointer(&default_tz));
 
+	// epoch datetime
+
+	void epoch_test() {
+		auto _ = g_date_time_format_iso8601(epoch);
+		g_assert_true(0 == g_strcmp0(SEPOCH, _));
+		g_free(_);
+	}
+
+	epoch = g_date_time_new_from_iso8601(UEPOCH, nullptr);
+	epoch_test();
+	g_date_time_unref(epoch);
+
+	epoch = g_date_time_new_from_iso8601(SEPOCH, nullptr);
+	epoch_test();
+	g_date_time_unref(epoch);
+
+	epoch = g_date_time_new_from_unix_utc(0);
+	epoch_test();
+
 	// foreach start
 	Foreach() {
 		gtk_label_set_text(GTK_LABEL(c->label), "...");
@@ -172,7 +214,7 @@ static void start(GtkEntry*, gpointer) {
 
 static void stop() {
 
-	if(!g_mutex_trylock(&change_state))
+	if (!g_mutex_trylock(&change_state))
 		return;
 
 	if (!running) {
@@ -191,7 +233,10 @@ static void stop() {
 	}
 
 	g_assert_true(until);
+	g_assert_true(epoch);
 	g_date_time_unref(g_steal_pointer(&until));
+	g_date_time_unref(g_steal_pointer(&epoch));
+
 	g_message("stoped");
 
 	stop_err:
@@ -229,6 +274,9 @@ GtkWidget *tab_clk() {
 		c->label = gtk_label_new(c->name);
 		gtk_box_append(box, c->label);
 	}
+
+	// crash?
+	start(GTK_ENTRY(entry), nullptr);
 
 	gtk_box_append(box, flexiblespace());
 
