@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <threads.h>
 
 #include "libclk.h"
 
@@ -12,9 +13,13 @@ static timer_t timerid = EMPTY;
 
 static Callback *callback;
 static void *userdata;
+static mtx_t cmutex;
 
 static void handler(int) {
+	int _ = mtx_trylock(&cmutex);
+	if (thrd_success != _) return;
 	(*callback)(userdata);
+	mtx_unlock(&cmutex);
 }
 
 // singleton
@@ -30,16 +35,18 @@ void *tick_timer_new(Callback *cb, void *d) {
 	callback = cb;
 	userdata = d;
 
-	// configure timeout
-	if (0 != timer_settime(timerid, 0, &ONESEC, nullptr))
-		return nullptr;
+	if (thrd_success != mtx_init(&cmutex, mtx_plain)) return nullptr;
 
-	// arm
+	// handle sigalarm
 	if (0 != sigaction(SIGALRM, &(struct sigaction){
 		.sa_handler = &handler,
 		.sa_mask = {},
 		.sa_flags = 0
 	}, nullptr))
+		return nullptr;
+
+	// generate sigalarm
+	if (0 != timer_settime(timerid, 0, &ONESEC, nullptr))
 		return nullptr;
 
 	return (void*)(intptr_t)(1);

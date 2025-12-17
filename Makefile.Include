@@ -1,4 +1,4 @@
-MAKEFLAGS := --no-print-directory -j30
+MAKEFLAGS := -j30 -r --no-print-directory
 DOMAIN := Toolbox
 
 # driver
