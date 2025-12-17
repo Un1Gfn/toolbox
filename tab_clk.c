@@ -56,11 +56,6 @@ static void alert(const char *const message) {
 		[2] = "...",
 		nullptr
 	};
-	/*
-	auto dialog = gtk_alert_dialog_new("");
-	gtk_alert_dialog_set_message(dialog, message);
-	gtk_alert_dialog_set_detail(dialog, message):
-	*/
 	auto dialog = gtk_alert_dialog_new("%s", message);
 	gtk_alert_dialog_set_modal(dialog, true);
 	gtk_alert_dialog_set_buttons(dialog, labels);
@@ -78,7 +73,6 @@ typedef struct {
 
 static void idle(gpointer userdata) {
 	I *i = userdata;
-	//g_debug("tick %p", i->label);
 	gtk_label_set_text(i->label, i->text);
 	g_free(i->text);
 	g_free(i);
@@ -156,11 +150,8 @@ static void start(GtkEntry*, gpointer) {
 	g_date_time_unref(g_steal_pointer(&now));
 
 	// until iso8601
-	//g_debug("%s", iso);
 	g_assert_true(memcpy(iso + 11, s, 5) == iso + 11);
-	//g_debug("%s", iso);
 	g_assert_true(memcpy(iso + 16, ":00.000000", 9) == iso + 16);
-	//g_debug("%s", iso);
 
 	// until datetime
 	auto default_tz = g_time_zone_new_local();
@@ -171,7 +162,6 @@ static void start(GtkEntry*, gpointer) {
 
 	// until iso8601 verify
 	iso = g_date_time_format_iso8601(until);
-	g_debug("%s", iso);
 	g_free(g_steal_pointer(&iso));
 
 	// timezone destroy
@@ -198,15 +188,12 @@ static void start(GtkEntry*, gpointer) {
 
 	// foreach start
 	Foreach() {
-		gtk_label_set_text(GTK_LABEL(c->label), "...");
-	}
-	Foreach() {
 		g_assert_true(!c->tick);
 		c->tick = c->new(&callback, c->label);
 		g_assert_true(c->tick);
 	}
 
-	//g_message("running...");
+	g_debug("running...");
 
 	err:
 	g_mutex_unlock(&change_state);
@@ -230,7 +217,6 @@ static void stop() {
 		g_assert_true(c->tick);
 		c->destroy(&(c->tick));
 		g_assert_true(!c->tick);
-		//g_message("%s", c->name);
 		I *i = g_malloc0(sizeof(I));
 		i->label = GTK_LABEL(c->label);
 		i->text = g_strdup(c->name);
@@ -242,7 +228,7 @@ static void stop() {
 	g_date_time_unref(g_steal_pointer(&until));
 	g_date_time_unref(g_steal_pointer(&epoch));
 
-	g_message("stoped");
+	g_debug("stoped");
 
 	stop_err:
 		g_mutex_unlock(&change_state);
@@ -281,7 +267,7 @@ GtkWidget *tab_clk() {
 	}
 
 	// crash?
-	//start(GTK_ENTRY(entry), nullptr);
+	start(GTK_ENTRY(entry), nullptr);
 
 	gtk_box_append(box, flexiblespace());
 

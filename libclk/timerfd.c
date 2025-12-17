@@ -21,9 +21,10 @@ static int cth_start(void *p) {
 		return -1;
 	TickTimerfd *tick = p;
 	for (;;) {
-		char buf[SZ] = {};
-		if (8 != read(tick->timerfd, buf, SZ)) return -1;
-		if (1 != *(int64_t*)buf) return -1;
+		uint64_t buf[2] = {};
+		static_assert(16 == sizeof(buf));
+		if (8 != read(tick->timerfd, buf, 16)) return -1;
+		if (1 != buf[0]) return -1;
 		int _ = mtx_trylock(&(tick->mutex));
 		if (thrd_busy == _) return 0;
 		if (thrd_success != _) return -1;
@@ -37,7 +38,7 @@ void *tick_timerfd_new(void (*callback)(void*), void *userdata) {
 	TickTimerfd *tick = calloc(1, sizeof(TickTimerfd));
 	if (!tick) return nullptr;
 
-	if (-1 == (tick->timerfd = timerfd_create(CLOCK_REALTIME, 0))) goto err;
+	if (-1 == (tick->timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC))) goto err;
 	timerfd_settime(tick->timerfd, 0, &ONESEC, nullptr);
 
 	tick->callback = callback;
