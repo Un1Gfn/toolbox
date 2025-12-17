@@ -46,6 +46,3 @@ ifeq ($(wildcard Makefile.Include),)
 else
  .EXTRA_PREREQS := Makefile Makefile.Include
 endif
-
-#-include $(GUI:.o=.d)
--include $(wildcard *.d)

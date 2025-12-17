@@ -1,3 +1,5 @@
+-include ../Makefile.Include
+
 libclk.so: nanosleep.o timer.o timerfd.o
 	$(C) -shared -o $@ $^
 
@@ -19,4 +21,4 @@ timerfd.o \
 clean:
 	rm -f *.so *.o *.d 2>/dev/null || true
 
--include ../Makefile.Include
+-include $(wildcard *.d)

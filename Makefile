@@ -81,3 +81,6 @@ run_debug: all
 
 run_gdb: all
 	env G_MESSAGES_DEBUG="$(DOMAIN)" gdb --args ./toolbox $(A)
+
+#-include $(GUI:.o=.d)
+-include $(wildcard *.d)

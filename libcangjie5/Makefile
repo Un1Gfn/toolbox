@@ -1,3 +1,5 @@
+-include ../Makefile.Include
+
 libcangjie5.so: table.o
 	$(C) -shared -o $@ $^
 
@@ -19,4 +21,4 @@ purge:
 	$(MAKE) clean
 	rm -f table.c cangjie5.txt 2>/dev/null || true
 
--include ../Makefile.Include
+-include $(wildcard *.d)

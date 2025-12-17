@@ -53,3 +53,35 @@
 //	return tooltip;
 //}
 
+
+//{
+//	const int epfd = epoll_create1(EPOLL_CLOEXEC);
+//	if (0 > epfd) return -1;
+//
+//	if (0 != epoll_ctl(
+//		epfd,
+//		EPOLL_CTL_ADD,
+//		tick->timerfd,
+//		&(struct epoll_event){
+//			.events = EPOLLIN|EPOLLET,
+//			.data = {}
+//		}
+//	)) return -1;
+//
+//	for (;;) {
+//
+//		static const int n = 1;
+//		struct epoll_event events[n] = {};
+//		G_DEBUG_HERE();
+//		if (1 != epoll_wait(epfd, events, n, 0)) return -1;
+//		G_DEBUG_HERE();
+//		printf("0x%X\n", events[0].events);
+//
+//		int _ = mtx_trylock(&(tick->mutex));
+//		if (thrd_busy == _) return 0;
+//		if (thrd_success != _) return -1;
+//		(*(tick->callback))(tick->userdata);
+//		if (thrd_success != mtx_unlock(&(tick->mutex))) return -1;
+//
+//	}
+//}

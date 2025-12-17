@@ -172,6 +172,11 @@ static gint s_handle_local_options(GApplication*, GVariantDict*, gpointer user_d
 
 int main(int argc, char **argv) {
 
+	// https://github.com/google/sanitizers/wiki/AddressSanitizerSupportedPlatforms/dd6e4bfd9189239ff1003002786421408fcc9190#gcc
+#ifdef __SANITIZE_ADDRESS__
+	g_print("[pid=%u AddressSanitizer %s]\n", getpid(), __asan_default_options());
+#endif
+
 	// app metadata
 	g_set_application_name("toolbox_2");
 	auto app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
