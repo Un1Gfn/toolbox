@@ -23,6 +23,7 @@ C := $C $(CFLAGS)
 
 # sanitizer
 # 1440585 / 33314
+# toolbox.c / const char *__asan_default_options()
 #C := $C -fsanitize=address
 #C := $C -fsanitize=thread
 #C := $C -fsanitize=undefined

@@ -1,5 +1,9 @@
 //#undef G_LOG_DOMAIN
 
+const char *__asan_default_options() {
+	return "log_path=/tmp/toolbox_asan";
+}
+
 #include <gtk/gtk.h>
 #include <assert.h>
 #include "tabs.h"

@@ -34,6 +34,7 @@ typedef struct {
 } Clk;
 
 static Clk clk[] = {
+	CLK(timerfd),
 	CLK(nanosleep),
 	CLK(timer),
 	//CLK(libev),
@@ -205,7 +206,7 @@ static void start(GtkEntry*, gpointer) {
 		g_assert_true(c->tick);
 	}
 
-	g_message("running...");
+	//g_message("running...");
 
 	err:
 	g_mutex_unlock(&change_state);
@@ -229,7 +230,11 @@ static void stop() {
 		g_assert_true(c->tick);
 		c->destroy(&(c->tick));
 		g_assert_true(!c->tick);
-		gtk_label_set_text(GTK_LABEL(c->label), c->name);
+		//g_message("%s", c->name);
+		I *i = g_malloc0(sizeof(I));
+		i->label = GTK_LABEL(c->label);
+		i->text = g_strdup(c->name);
+		g_idle_add_once(&idle, i);
 	}
 
 	g_assert_true(until);
@@ -276,7 +281,7 @@ GtkWidget *tab_clk() {
 	}
 
 	// crash?
-	start(GTK_ENTRY(entry), nullptr);
+	//start(GTK_ENTRY(entry), nullptr);
 
 	gtk_box_append(box, flexiblespace());
 

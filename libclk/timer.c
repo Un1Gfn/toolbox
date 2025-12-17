@@ -10,7 +10,7 @@
 _Static_assert(sizeof(void*) == sizeof(timer_t), "");
 static timer_t timerid = EMPTY;
 
-static void (*callback)(void*);
+static Callback *callback;
 static void *userdata;
 
 static void handler(int) {
@@ -20,7 +20,7 @@ static void handler(int) {
 // singleton
 // signal handler cannot take userdata
 // there can be one tick_timer instance only
-void *tick_timer_new(void (*cb)(void*), void *d) {
+void *tick_timer_new(Callback *cb, void *d) {
 
 	// create timer
 	if (EMPTY != timerid)

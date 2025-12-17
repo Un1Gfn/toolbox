@@ -4,21 +4,10 @@
 #include <stdlib.h>
 #include "libclk.h"
 
-/*
-// opaque
-typedef struct TickNanosleep TickNanosleep;
-struct TickNanosleep {
-	void *userdata;
-	void (*callback)(void*);
-	pthread_t thread;
-};
-*/
-
-// private
 typedef struct {
 	void *userdata;
-	void (*callback)(void*);
-	pthread_t thread;
+	Callback *callback;
+	pthread_t pth;
 } TickNanosleep;
 
 static void *start_routine(TickNanosleep *t){
@@ -40,7 +29,7 @@ static void *start_routine(TickNanosleep *t){
 	return (void*)-2;
 }
 
-void *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
+void *tick_nanosleep_new(Callback *callback, void *userdata) {
 
 	TickNanosleep *t = calloc(1, sizeof(TickNanosleep));
 
@@ -50,7 +39,7 @@ void *tick_nanosleep_new(void (*callback)(void*), void *userdata) {
 	t->userdata = userdata;
 	t->callback = callback;
 
-	if (0 != pthread_create(&(t->thread), nullptr, (void*(*)(void*))start_routine, t))
+	if (0 != pthread_create(&(t->pth), nullptr, (void*(*)(void*))start_routine, t))
 		goto error;
 
 	return t;
@@ -65,12 +54,12 @@ void tick_nanosleep_destroy(void** p) {
 
 	TickNanosleep *t = *p;
 
-	if (0 != pthread_cancel(t->thread))
+	if (0 != pthread_cancel(t->pth))
 		return;
 
 	void *_ = nullptr;
 
-	if (0 != pthread_join(t->thread, &_))
+	if (0 != pthread_join(t->pth, &_))
 		return;
 
 	if (PTHREAD_CANCELED != _)

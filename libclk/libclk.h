@@ -16,26 +16,16 @@
 		.it_value = { .tv_sec = 0, .tv_nsec = 1 } \
 	}
 
-typedef void *New(void (*)(void*), void*);
+typedef void Callback(void*);
+typedef void *New(Callback*, void*);
 typedef void Destroy(void**);
 
 #define DECL(x) \
 	New tick_##x##_new; \
 	Destroy tick_##x##_destroy;
 
-// nanosleep implementation
 DECL(nanosleep);
-
-// timer_create implementation, singleton
-//bool tick_timer_start(void (*)(void*), void*);
-//bool tick_timer_stop();
 DECL(timer);
-
-// timerfd_create implementation
-//DECL(timerfd);
-
-// libev implementation
+DECL(timerfd);
 //DECL(libev);
-
-// libevent implementation
 //DECL(libevent);
