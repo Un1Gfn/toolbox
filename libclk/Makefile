@@ -1,16 +1,19 @@
 -include ../Makefile.Include
 
-libclk.so: nanosleep.o timer.o timerfd.o
+# compile without pkg-config
+O := nanosleep.o timerfd.o libev.o
+
+# race freeze bug
+#O += timer.o
+
+# default target
+libclk.so: $O
 	$(C) -shared -o $@ $^
 
-#libev.o
-nanosleep.o \
-timer.o \
-timerfd.o \
-: \
-%.o: %.c
+$O: %.o: %.c
 	$(C) -c -o $@ $<
 
+# compile with pkg-config
 #libevent.o \
 #: \
 #%.o: %.c

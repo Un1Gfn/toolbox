@@ -11,29 +11,31 @@
 _Static_assert(sizeof(void*) == sizeof(timer_t), "");
 static timer_t timerid = EMPTY;
 
-static Callback *callback;
-static void *userdata;
+static Callback *cb;
+static void *d;
 static mtx_t cmutex;
 
 static void handler(int) {
 	int _ = mtx_trylock(&cmutex);
 	if (thrd_success != _) return;
-	(*callback)(userdata);
+	(*cb)(d);
 	mtx_unlock(&cmutex);
 }
 
 // singleton
 // signal handler cannot take userdata
 // there can be one tick_timer instance only
-void *tick_timer_new(Callback *cb, void *d) {
+NEW(timer) {
+
+	g_printerr("timer.c: warning: race freeze bug\n");
 
 	// create timer
 	if (EMPTY != timerid)
 		return nullptr;
 	if (0 != timer_create(CLOCK_REALTIME, nullptr, &timerid))
 		return nullptr;
-	callback = cb;
-	userdata = d;
+	cb = callback;
+	d = userdata;
 
 	if (thrd_success != mtx_init(&cmutex, mtx_plain)) return nullptr;
 
@@ -53,7 +55,7 @@ void *tick_timer_new(Callback *cb, void *d) {
 
 }
 
-void tick_timer_destroy(void **p) {
+DESTROY(timer) {
 	if (EMPTY == timerid)
 		return;
 	if (1 != (intptr_t)(*p))
@@ -62,6 +64,6 @@ void tick_timer_destroy(void **p) {
 		return;
 	timerid = EMPTY;
 	*p = nullptr;
-	callback = nullptr;
-	userdata = nullptr;
+	cb = nullptr;
+	d = nullptr;
 }

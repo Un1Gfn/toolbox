@@ -29,7 +29,7 @@ static void *start_routine(TickNanosleep *t){
 	return (void*)-2;
 }
 
-void *tick_nanosleep_new(Callback *callback, void *userdata) {
+NEW(nanosleep) {
 
 	TickNanosleep *t = calloc(1, sizeof(TickNanosleep));
 
@@ -50,7 +50,7 @@ void *tick_nanosleep_new(Callback *callback, void *userdata) {
 
 }
 
-void tick_nanosleep_destroy(void** p) {
+DESTROY(nanosleep) {
 
 	TickNanosleep *t = *p;
 

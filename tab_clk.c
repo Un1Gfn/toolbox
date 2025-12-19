@@ -36,9 +36,8 @@ typedef struct {
 static Clk clk[] = {
 	CLK(timerfd),
 	CLK(nanosleep),
-	CLK(timer),
-	//CLK(libev),
-	//CLK(libevent),
+	//CLK(timer), // race freeze bug
+	CLK(libev),
 	{ }
 };
 
@@ -64,7 +63,6 @@ static void alert(const char *const message) {
 	gtk_alert_dialog_show(dialog, window);
 	g_object_unref(g_steal_pointer(&dialog));
 }
-
 
 typedef struct {
 	GtkLabel *label;

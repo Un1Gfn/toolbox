@@ -40,7 +40,7 @@ static int cth_start(void *p) {
 
 }
 
-void *tick_timerfd_new(void (*callback)(void*), void *userdata) {
+NEW(timerfd) {
 
 	TickTimerfd *tick = calloc(1, sizeof(TickTimerfd));
 	if (!tick) goto err;
@@ -66,7 +66,7 @@ void *tick_timerfd_new(void (*callback)(void*), void *userdata) {
 
 }
 
-void tick_timerfd_destroy(void** p) {
+DESTROY(timerfd) {
 
 	if (!p || !*p) return;
 	TickTimerfd *tick = *p;
