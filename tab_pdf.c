@@ -99,7 +99,10 @@ static gpointer load(gpointer do_draw) {
 		nullptr
 	);
 	GBytes *bytes2 = nullptr;
+	G_DEBUG_HERE();
+	//(toolbox:15548): GLib-WARNING **: 10:52:29.938: ../glib/glib/gmain.c:6116: waitid(pid:16197, pidfd=14) failed: No child processes (10). See documentation of g_child_watch_source_new() for possible causes.
 	g_subprocess_communicate(subprocess, nullptr, nullptr, &bytes2, nullptr, nullptr);
+	G_DEBUG_HERE();
 	g_subprocess_wait(subprocess, nullptr, nullptr);
 	g_assert_true(bytes2);
 	//g_printerr(" "); g_print("\n");

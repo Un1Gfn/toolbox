@@ -28,7 +28,7 @@ $(foreach d, $(SO1), $(eval \
 ))
 
 toolbox: $(OBJ) $(SO2)
-	$(C) $(OBJ) $(shell pkg-config --libs gtk4,openssl,poppler-glib) -lev $(SO3) -o $@
+	$(C) $(OBJ) $(shell pkg-config --libs gtk4,openssl,poppler-glib) $(SO3) -o $@
 
 # papers-view-4.0 = crash
 # evince-view-3.0 = gtk3 conflict with gtk4

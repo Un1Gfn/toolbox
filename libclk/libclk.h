@@ -27,7 +27,13 @@ typedef void Destroy(void**);
 #define NEW(x) void *tick_##x##_new (Callback callback, void *userdata)
 #define DESTROY(x) void tick_##x##_destroy(void **p)
 #define DECL(x) NEW(x); DESTROY(x);
+
+// GSubprocess conflict
+//DECL(libev);
+
 DECL(nanosleep);
-//DECL(timer); // race freeze bug
+
+// race freeze bug
+//DECL(timer);
+
 DECL(timerfd);
-DECL(libev);

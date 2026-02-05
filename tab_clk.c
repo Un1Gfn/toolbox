@@ -34,10 +34,10 @@ typedef struct {
 } Clk;
 
 static Clk clk[] = {
-	CLK(timerfd),
+	//CLK(libev), // GSubprocess conflict
 	CLK(nanosleep),
 	//CLK(timer), // race freeze bug
-	CLK(libev),
+	CLK(timerfd),
 	{ }
 };
 
@@ -247,7 +247,7 @@ GtkWidget *tab_clk() {
 	auto box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 	gtk_box_append(box, flexiblespace());
 
-	buffer = gtk_entry_buffer_new("21:00", -1); // OK
+	buffer = gtk_entry_buffer_new("20:00", -1); // OK
 	auto entry = gtk_entry_new_with_buffer(buffer);
 	g_object_unref(buffer); // crash?
 

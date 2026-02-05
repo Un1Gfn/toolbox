@@ -2,5 +2,5 @@
 Type=Application
 Name=Toolbox
 Icon=/home/darren/toolbox/svgrepo_398502_toolbox.svg
-Exec=/home/darren/toolbox/toolbox -t 5
+Exec=/home/darren/toolbox/toolbox -t -1
 #StartupWMClass=kountdown

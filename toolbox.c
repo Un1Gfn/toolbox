@@ -1,4 +1,4 @@
-//#undef G_LOG_DOMAIN
+#undef G_LOG_DOMAIN
 
 const char *__asan_default_options() {
 	return "log_path=/tmp/toolbox_asan";
@@ -121,8 +121,8 @@ static void s_activate(GtkApplication* app, gpointer) {
 	// main window
 	window = GTK_WINDOW(gtk_application_window_new(app));
 	gtk_window_set_title(window, "Toolbox");
-	gtk_window_set_default_size(window, 1024, 768);
-	gtk_widget_set_size_request(GTK_WIDGET(window), 1024, 768);
+	gtk_window_set_default_size(window, 1280, 960);
+	gtk_widget_set_size_request(GTK_WIDGET(window), 1280, 960);
 
 	// notebook tab stub
 	notebook = GTK_NOTEBOOK(gtk_notebook_new());

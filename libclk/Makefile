@@ -1,10 +1,14 @@
 -include ../Makefile.Include
 
-# compile without pkg-config
-O := nanosleep.o timerfd.o libev.o
+# GSubprocess conflict
+#O += libev.o
+
+O += nanosleep.o
 
 # race freeze bug
 #O += timer.o
+
+O += timerfd.o
 
 # default target
 libclk.so: $O
