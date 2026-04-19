@@ -7,6 +7,7 @@ OBJ := $(addsuffix .o, \
  tab_ddc \
  tab_env \
  tab_pdf \
+ tab_ssrcloud \
  tab_welcome \
  toolbox \
  util \
@@ -28,7 +29,7 @@ $(foreach d, $(SO1), $(eval \
 ))
 
 toolbox: $(OBJ) $(SO2)
-	$(C) $(OBJ) $(shell pkg-config --libs gtk4,openssl,poppler-glib) $(SO3) -o $@
+	$(C) $(OBJ) $$(pkg-config --libs gtk4,gio-unix-2.0,json-glib-1.0,openssl,poppler-glib) $(SO3) -o $@
 
 # papers-view-4.0 = crash
 # evince-view-3.0 = gtk3 conflict with gtk4
@@ -36,7 +37,12 @@ toolbox: $(OBJ) $(SO2)
 tab_pdf.o \
 : \
 %.o: %.c tabs.h
-	$(C) -c $(shell pkg-config --cflags gtk4,poppler-glib) -o $@ $<
+	$C -c $$(pkg-config --cflags gtk4,poppler-glib) -o $@ $<
+
+tab_ssrcloud.o \
+: \
+%.o: %.c tabs.h
+	$C -c $$(pkg-config --cflags gtk4,gio-unix-2.0,json-glib-1.0) -o $@ $<
 
 tab_base64.o \
 tab_clk.o \

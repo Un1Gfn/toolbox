@@ -28,6 +28,7 @@ static Tab tabs[] = {
 	{ &tab_ddc, "DDC/CI" },
 	{ &tab_pdf, "PDF" },
 	{ &tab_clk, "Clock" },
+	{ &tab_ssrcloud, "Ssrcloud" },
 	{ }
 };
 
