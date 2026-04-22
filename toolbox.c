@@ -26,9 +26,9 @@ static Tab tabs[] = {
 	{ &tab_base64, "Base64" },
 	{ &tab_env, "Env" },
 	{ &tab_ddc, "DDC/CI" },
-	{ &tab_pdf, "PDF" },
-	{ &tab_clk, "Clock" },
+	//{ &tab_pdf, "PDF" },
 	{ &tab_ssrcloud, "Ssrcloud" },
+	{ &tab_clk, "Clock" },
 	{ }
 };
 
@@ -115,15 +115,15 @@ static void s_activate(GtkApplication* app, gpointer) {
 		return;
 
 	// font
-	auto settings = gtk_settings_get_default();
-	g_object_set(settings, "gtk-font-name", "Dejavu Sans Mono 18", nullptr);
-	g_object_unref(settings);
+	//auto settings = gtk_settings_get_default();
+	//g_object_set(settings, "gtk-font-name", "Dejavu Sans Mono 18", nullptr);
+	//g_object_unref(settings);
 
 	// main window
 	window = GTK_WINDOW(gtk_application_window_new(app));
 	gtk_window_set_title(window, "Toolbox");
-	gtk_window_set_default_size(window, 1280, 960);
-	gtk_widget_set_size_request(GTK_WIDGET(window), 1280, 960);
+	gtk_window_set_default_size(window, 800, 600);
+	gtk_widget_set_size_request(GTK_WIDGET(window), 800, 600);
 
 	// notebook tab stub
 	notebook = GTK_NOTEBOOK(gtk_notebook_new());

@@ -101,28 +101,48 @@ void convert() {
 
 GtkWidget *tab_ssrcloud() {
 
-	erase = gtk_check_button_new_with_label("erase");
-	restart = gtk_check_button_new_with_label("restart "SERVICE);
-	path = gtk_entry_new();
-
 	//gtk_file_dialog_new()
+
+	// file path
+	path = gtk_entry_new();
+	gtk_widget_set_hexpand(path, TRUE);
 	auto choose = gtk_button_new_with_label("choose");
+
+	// start conversion
 	auto run = gtk_button_new_with_label("run");
 
-	auto bh = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-	gtk_box_append(bh, choose);
-	gtk_box_append(bh, path);
-	gtk_box_append(bh, run);
+	auto bh = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_box_append(GTK_BOX(bh), path);
+	gtk_box_append(GTK_BOX(bh), choose);
 
-	auto bv = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-	gtk_box_append(bv, flexiblespace());
-	gtk_box_append(bv, erase);
-	gtk_box_append(bv, flexiblespace());
-	gtk_box_append(bv, restart);
-	gtk_box_append(bv, flexiblespace());
-	gtk_box_append(bv, GTK_WIDGET(bh));
-	gtk_box_append(bv, flexiblespace());
-	return GTK_WIDGET(bv);
+	auto bv = gtk_list_box_new();
+	gtk_list_box_set_selection_mode(GTK_LIST_BOX(bv), GTK_SELECTION_NONE);
+	gtk_list_box_set_show_separators(GTK_LIST_BOX(bv), FALSE);
+	gtk_widget_set_valign(bv, GTK_ALIGN_CENTER);
+	gtk_widget_set_vexpand(bv, TRUE);
+
+	// settings toggles
+	#define X(O) { \
+		auto label = gtk_label_new(G_STRINGIFY(O)" "); \
+		gtk_widget_set_halign(label, GTK_ALIGN_END); \
+		gtk_widget_set_hexpand(label, TRUE); \
+		O = gtk_switch_new(); \
+		gtk_switch_set_active(GTK_SWITCH(O), TRUE); \
+		gtk_widget_set_sensitive(O, FALSE); \
+		auto row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); \
+		gtk_box_append(GTK_BOX(row), label); \
+		gtk_box_append(GTK_BOX(row), O); \
+		gtk_list_box_append(GTK_LIST_BOX(bv), row); \
+	}
+	X(erase);
+	X(restart);
+
+	gtk_list_box_append(GTK_LIST_BOX(bv), GTK_WIDGET(bh));
+	gtk_list_box_append(GTK_LIST_BOX(bv), run);
+
+	auto b = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_box_append(GTK_BOX(b), bv);
+	return b;
 
 }
 
