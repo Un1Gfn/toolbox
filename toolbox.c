@@ -1,8 +1,8 @@
-#undef G_LOG_DOMAIN
+//#undef G_LOG_DOMAIN
 
-const char *__asan_default_options() {
-	return "log_path=/tmp/toolbox_asan";
-}
+//const char *__asan_default_options() {
+//	return "log_path=/tmp/toolbox_asan";
+//}
 
 #include <gtk/gtk.h>
 #include <assert.h>
@@ -11,8 +11,13 @@ const char *__asan_default_options() {
 
 _Static_assert(4 == GTK_MAJOR_VERSION, "");
 
+// immune to autoptr cleanup
 GtkWindow *window = nullptr;
-static GtkNotebook *notebook;
+static GtkNotebook *notebook = nullptr;
+
+// ?
+typedef struct { GtkWidget* stack; GtkWidget *widget; } SW;
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(SW, free);
 
 // notebook tab type
 typedef struct {
@@ -23,13 +28,13 @@ typedef struct {
 // notebook slot nullptr-terminated
 static Tab tabs[] = {
 	{ &tab_welcome, "Welcome" },
-	{ &tab_base64, "Base64" },
-	{ &tab_env, "Env" },
-	{ &tab_ddc, "DDC/CI" },
-	//{ &tab_pdf, "PDF" },
-	{ &tab_ssrcloud, "Ssrcloud" },
-	{ &tab_clk, "Clock" },
-	{ }
+	//{ &tab_base64, "Base64" },
+	//{ &tab_env, "Env" },
+	//{ &tab_ddc, "DDC/CI" },
+	////{ &tab_pdf, "PDF" },
+	//{ &tab_ssrcloud, "Ssrcloud" },
+	//{ &tab_clk, "Clock" },
+	{ } // do not remove this line
 };
 
 // notebook tab count
@@ -72,13 +77,9 @@ static void init_entries() {
 }
 
 // notebook tab full
-
-typedef struct { GtkWidget* stack; GtkWidget *widget; } SW;
-
 static void idle_stack(gpointer userdata) {
-	auto sw = (SW*)userdata;
+	g_autoptr(SW) sw = (SW*)userdata;
 	gtk_stack_add_child(GTK_STACK(sw->stack), sw->widget);
-	g_free(sw);
 }
 
 static void th_func(gpointer data, gpointer userdata) {
@@ -87,22 +88,22 @@ static void th_func(gpointer data, gpointer userdata) {
 	g_assert_true(!userdata);
 	g_assert_true(data);
 	auto t = (Tab*)data;
-	SW *sw = g_malloc0(sizeof(SW));
+	g_autoptr(SW) sw = g_new0(SW, 1);
 
 	sw->widget = (*(t->f))();
 	g_assert_true(sw->widget);
 
 	sw->stack = gtk_notebook_get_nth_page(notebook, t - tabs);
-	g_assert_true(sw->stack);
-	g_assert_true(G_TYPE_CHECK_INSTANCE_TYPE(sw->stack, GTK_TYPE_STACK));
-	g_assert_true(0 == g_strcmp0("GtkStack", g_type_name(G_OBJECT_TYPE(sw->stack))));
+	g_assert_true(
+		sw->stack &&
+		G_TYPE_CHECK_INSTANCE_TYPE(sw->stack, GTK_TYPE_STACK) &&
+		0 == g_strcmp0("GtkStack", g_type_name(G_OBJECT_TYPE(sw->stack)))
+	);
 
-	g_idle_add_once(&idle_stack, sw);
+	g_idle_add_once(&idle_stack, g_steal_pointer(&sw));
 
 }
 
-// do not dispatch nested function to g_idle_add_once
-// avoid out of scope calling
 void idle_switch(gpointer userdata) {
 	gtk_notebook_set_current_page(notebook, (intptr_t)userdata);
 }
@@ -145,6 +146,8 @@ static void s_activate(GtkApplication* app, gpointer) {
 	for (auto t = tabs; t->f; t++) {
 		g_assert_true(g_thread_pool_push(pool, t, nullptr));
 	}
+	g_thread_pool_free(pool, FALSE, FALSE);
+	pool = nullptr;
 
 	// notebook arg switch
 	// idle avoid pango segmentation fault
@@ -175,12 +178,12 @@ int main(int argc, char **argv) {
 
 	// https://github.com/google/sanitizers/wiki/AddressSanitizerSupportedPlatforms/dd6e4bfd9189239ff1003002786421408fcc9190#gcc
 #ifdef __SANITIZE_ADDRESS__
-	g_print("[pid=%u AddressSanitizer %s]\n", getpid(), __asan_default_options());
+	//g_print("[pid=%u AddressSanitizer %s]\n", getpid(), __asan_default_options());
 #endif
 
 	// app metadata
 	g_set_application_name("toolbox_2");
-	auto app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
+	g_autoptr(GtkApplication) app = gtk_application_new("io.github.Un1Gfn.toolbox_3",
 		G_APPLICATION_DEFAULT_FLAGS
 		| G_APPLICATION_HANDLES_OPEN
 		| G_APPLICATION_CAN_OVERRIDE_APP_ID
@@ -206,9 +209,7 @@ int main(int argc, char **argv) {
 
 	// app run
 	g_signal_connect(app, "activate", G_CALLBACK(s_activate), nullptr);
-	auto status = g_application_run(G_APPLICATION(app), argc, argv);
-	g_object_unref(app);
-	return status;
+	return g_application_run(G_APPLICATION(app), argc, argv);
 
 }
 

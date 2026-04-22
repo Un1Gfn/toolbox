@@ -82,7 +82,7 @@ run: all
 	./toolbox $(A)
 
 run_debug: all
-	env G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox $(A)
+	env G_ENABLE_DIAGNOSTIC=1 G_DEBUG="gc_friendly" G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox $(A)
 	@#env G_MESSAGES_DEBUG="all" ./toolbox
 
 run_gdb: all
