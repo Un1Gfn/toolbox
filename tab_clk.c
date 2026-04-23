@@ -55,13 +55,12 @@ static void alert(const char *const message) {
 		[2] = "...",
 		nullptr
 	};
-	auto dialog = gtk_alert_dialog_new("%s", message);
+	g_autoptr(GtkAlertDialog) dialog = gtk_alert_dialog_new("%s", message);
 	gtk_alert_dialog_set_modal(dialog, true);
 	gtk_alert_dialog_set_buttons(dialog, labels);
 	gtk_alert_dialog_set_default_button(dialog, 0);
 	gtk_alert_dialog_set_cancel_button(dialog, 1);
 	gtk_alert_dialog_show(dialog, window);
-	g_object_unref(g_steal_pointer(&dialog));
 }
 
 typedef struct {
@@ -84,12 +83,12 @@ static void callback(void *userdata) {
 	i->label = GTK_LABEL(userdata);
 
 	// diff
-	auto now = g_date_time_new_now_local();
+	g_autoptr(GDateTime) now = g_date_time_new_now_local();
 	GTimeSpan delta = g_date_time_difference(until, now);
-	auto diff = g_date_time_add(epoch, delta);
+	g_autoptr(GDateTime) diff = g_date_time_add(epoch, delta);
 
 	// human readable diff
-	auto s = g_date_time_format_iso8601(diff);
+	g_autofree gchar *s = g_date_time_format_iso8601(diff);
 	g_assert_true(27 == strnlen(s, 28));
 
 	// fill hud
@@ -103,11 +102,6 @@ static void callback(void *userdata) {
 		//(double)delta/1000000.0,
 	"");
 	g_assert_true(i->text && i->text[0]);
-
-	// cleanup
-	g_free(g_steal_pointer(&s));
-	g_date_time_unref(g_steal_pointer(&diff));
-	g_date_time_unref(g_steal_pointer(&now));
 
 	// render hud
 	// (toolbox:...): GLib-GObject-CRITICAL **: ...: g_object_unref: assertion 'G_IS_OBJECT (object)' failed
@@ -141,48 +135,43 @@ static void start(GtkEntry*, gpointer) {
 	running = true;
 
 	// now iso8601
-	auto now = g_date_time_new_now_local();
+	g_autoptr(GDateTime) now = g_date_time_new_now_local();
 	g_assert_true(now);
-	gchar *iso = g_date_time_format_iso8601(now);
+	g_autofree gchar *iso = g_date_time_format_iso8601(now);
 	g_assert_true(iso && 29 == strnlen(iso, 30));
-	g_date_time_unref(g_steal_pointer(&now));
 
 	// until iso8601
 	g_assert_true(memcpy(iso + 11, s, 5) == iso + 11);
 	g_assert_true(memcpy(iso + 16, ":00.000000", 9) == iso + 16);
 
 	// until datetime
-	auto default_tz = g_time_zone_new_local();
+	g_autoptr(GTimeZone) default_tz = g_time_zone_new_local();
 	g_assert_true(default_tz);
 	until = g_date_time_new_from_iso8601(iso, default_tz);
 	g_assert_true(until);
-	g_free(g_steal_pointer(&iso));
 
 	// until iso8601 verify
-	iso = g_date_time_format_iso8601(until);
-	g_free(g_steal_pointer(&iso));
-
-	// timezone destroy
-	g_time_zone_unref(g_steal_pointer(&default_tz));
+	//static const gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
+	//static const size_t LEN = sizeof(ISO8601_);
+	//_Static_assert(29+1 == sizeof(ISO8601_));
+	constexpr gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
+	constexpr size_t LEN = sizeof(ISO8601_) - 1;
+	_Static_assert(29 == LEN);
+	g_autofree gchar* iso2 = g_date_time_format_iso8601(until);
+	g_assert_true(0 == strncmp(iso, iso2, LEN+1));
 
 	// epoch datetime
-
-	void epoch_test() {
-		auto _ = g_date_time_format_iso8601(epoch);
+	void epoch_test(GDateTime *e) {
+		g_autofree gchar *_ = g_date_time_format_iso8601(e);
 		g_assert_true(0 == g_strcmp0(SEPOCH, _));
-		g_free(_);
 	}
-
-	epoch = g_date_time_new_from_iso8601(UEPOCH, nullptr);
-	epoch_test();
-	g_date_time_unref(epoch);
-
-	epoch = g_date_time_new_from_iso8601(SEPOCH, nullptr);
-	epoch_test();
-	g_date_time_unref(epoch);
-
+	g_autoptr(GDateTime) uepoch = g_date_time_new_from_iso8601(UEPOCH, nullptr);
+	epoch_test(uepoch);
+	g_autoptr(GDateTime) sepoch = g_date_time_new_from_iso8601(SEPOCH, nullptr);
+	epoch_test(sepoch);
+	g_assert_true(!epoch);
 	epoch = g_date_time_new_from_unix_utc(0);
-	epoch_test();
+	epoch_test(epoch);
 
 	// foreach start
 	Foreach() {
@@ -249,7 +238,6 @@ GtkWidget *tab_clk() {
 
 	buffer = gtk_entry_buffer_new("20:00", -1); // OK
 	auto entry = gtk_entry_new_with_buffer(buffer);
-	g_object_unref(buffer); // crash?
 
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_SECONDARY, "alarm-symbolic");
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_PRIMARY, "media-playback-stop-symbolic");

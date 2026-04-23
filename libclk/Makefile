@@ -15,7 +15,7 @@ libclk.so: $O
 	$(C) -shared -o $@ $^
 
 $O: %.o: %.c
-	$(C) -c -o $@ $<
+	$(C) $$(pkg-config --cflags glib-2.0) -c -o $@ $<
 
 # compile with pkg-config
 #libevent.o \

@@ -29,27 +29,6 @@ static void *start_routine(TickNanosleep *t){
 	return (void*)-2;
 }
 
-NEW(nanosleep) {
-
-	TickNanosleep *t = calloc(1, sizeof(TickNanosleep));
-
-	if (!t)
-		goto error;
-
-	t->userdata = userdata;
-	t->callback = callback;
-
-	if (0 != pthread_create(&(t->pth), nullptr, (void*(*)(void*))start_routine, t))
-		goto error;
-
-	return t;
-
-	error:
-		free(t);
-		return nullptr;
-
-}
-
 DESTROY(nanosleep) {
 
 	TickNanosleep *t = *p;
@@ -58,7 +37,6 @@ DESTROY(nanosleep) {
 		return;
 
 	void *_ = nullptr;
-
 	if (0 != pthread_join(t->pth, &_))
 		return;
 
@@ -67,5 +45,28 @@ DESTROY(nanosleep) {
 
 	free(*p);
 	*p = nullptr;
+
+}
+
+typedef void *T;
+static void d2(TickNanosleep **p) {
+	if (p && *p)
+		tick_nanosleep_destroy((void**)p);
+}
+
+NEW(nanosleep) {
+
+	__attribute__((cleanup(d2))) TickNanosleep *t = calloc(1, sizeof(TickNanosleep));
+
+	if (!t)
+		return nullptr;
+
+	t->userdata = userdata;
+	t->callback = callback;
+
+	if (0 != pthread_create(&(t->pth), nullptr, (void*(*)(void*))start_routine, t))
+		return nullptr;
+
+	return ({void *_ = t; t = nullptr; _;});
 
 }
