@@ -29,11 +29,11 @@ typedef struct {
 static Tab tabs[] = {
 	{ &tab_welcome, "Welcome" },
 	{ &tab_base64, "Base64" },
-	//{ &tab_env, "Env" },
-	//{ &tab_ddc, "DDC/CI" },
-	////{ &tab_pdf, "PDF" },
+	{ &tab_env, "Env" },
+	{ &tab_ddc, "DDC/CI" },
+	{ &tab_pdf, "PDF" },
 	//{ &tab_ssrcloud, "Ssrcloud" },
-	//{ &tab_clk, "Clock" },
+	{ &tab_clk, "Clock" },
 	{ } // do not remove this line
 };
 

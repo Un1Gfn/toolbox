@@ -27,6 +27,7 @@ C := $C $(CFLAGS)
 C := $C -fsanitize=address
 #C := $C -fsanitize=thread
 #C := $C -fsanitize=undefined
+C += -save-temps
 
 #SO := cangjie5 clk
 SO := clk

@@ -2,5 +2,7 @@
 /toolbox
 /tab_welcome.c
 *.d
+*.i
+*.s
 *.o
 *.so
