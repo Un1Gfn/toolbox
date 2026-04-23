@@ -107,3 +107,48 @@ void mmm_7() {
 void mmm_8() {
 	void *x = calloc(1, SZ);
 }
+
+
+typedef struct {
+	gpointer *buffer;
+} S_;
+
+typedef S_ *S;
+
+S s_create() {
+	S s = g_new0(S_, 1);
+	s->buffer = g_malloc0(SZ);
+	return s;
+}
+
+void s_clear(S s) {
+	free(s->buffer);
+	free(s);
+}
+
+// destructor wrapper
+void s_clear2(S *sp) {
+	s_clear(*sp);
+}
+
+// use wrapper
+G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC(S, s_clear2);
+
+// leak
+void mmm_9() {
+	S s = s_create();
+	s = nullptr;
+	//s_clear(s);
+}
+
+// ok
+void mmm_10() {
+	S s = s_create();
+	s_clear(s);
+	s = nullptr;
+}
+
+// ok - auto implicit pointer
+void mmm_11() {
+	g_auto(S) s = s_create();
+}

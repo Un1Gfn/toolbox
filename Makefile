@@ -81,9 +81,13 @@ purge:
 run: all
 	./toolbox $(A)
 
+DEBUG_ENV := env
+DEBUG_ENV += G_ENABLE_DIAGNOSTIC=1
+DEBUG_ENV += G_DEBUG="gc_friendly"
+DEBUG_ENV += G_MESSAGES_DEBUG="$(DOMAIN)"
+#DEBUG_ENV += G_MESSAGES_DEBUG="all"
 run_debug: all
-	env G_ENABLE_DIAGNOSTIC=1 G_DEBUG="gc_friendly" G_MESSAGES_DEBUG="$(DOMAIN)" ./toolbox $(A)
-	@#env G_MESSAGES_DEBUG="all" ./toolbox
+	$(DEBUG_ENV) ./toolbox $(A)
 
 run_gdb: all
 	env G_MESSAGES_DEBUG="$(DOMAIN)" gdb --args ./toolbox $(A)

@@ -28,7 +28,7 @@ typedef struct {
 // notebook slot nullptr-terminated
 static Tab tabs[] = {
 	{ &tab_welcome, "Welcome" },
-	//{ &tab_base64, "Base64" },
+	{ &tab_base64, "Base64" },
 	//{ &tab_env, "Env" },
 	//{ &tab_ddc, "DDC/CI" },
 	////{ &tab_pdf, "PDF" },
@@ -110,10 +110,12 @@ void idle_switch(gpointer userdata) {
 
 static void s_activate(GtkApplication* app, gpointer) {
 
-	// run once
+	// robbery
+	// gtk_application_new()
+	// G_APPLICATION_ALLOW_REPLACEMENT
+	// G_APPLICATION_REPLACE
 	static GMutex m;
-	if(!g_mutex_trylock(&m))
-		return;
+	g_assert_true(g_mutex_trylock(&m));
 
 	// font
 	//auto settings = gtk_settings_get_default();

@@ -21,6 +21,13 @@ static GtkEntryBuffer *buffer;
 // output
 static GtkWidget *label;
 
+// g_autoptr
+void EVP_ENCODE_CTX_free2(EVP_ENCODE_CTX *ctx) {
+	assert(0 == EVP_ENCODE_CTX_num(ctx));
+	EVP_ENCODE_CTX_free(ctx);
+}
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(EVP_ENCODE_CTX, EVP_ENCODE_CTX_free2);
+
 static void base64() {
 
 	// check
@@ -32,7 +39,7 @@ static void base64() {
 	assert(n > 0);
 
 	// init
-	auto ctx = EVP_ENCODE_CTX_new();
+	g_autoptr(EVP_ENCODE_CTX) ctx = EVP_ENCODE_CTX_new();
 	assert(ctx);
 	EVP_EncodeInit(ctx);
 
@@ -44,11 +51,6 @@ static void base64() {
 		n
 	);
 	assert(r >= 4 && r % 4 == 0);
-
-	// cleanup
-	assert(0 == EVP_ENCODE_CTX_num(ctx));
-	EVP_ENCODE_CTX_free(ctx);
-	ctx = nullptr;
 
 }
 
