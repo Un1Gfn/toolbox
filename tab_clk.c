@@ -150,15 +150,17 @@ static void start(GtkEntry*, gpointer) {
 	until = g_date_time_new_from_iso8601(iso, default_tz);
 	g_assert_true(until);
 
-	// until iso8601 verify
+	// until iso8601 verify broken
+	// 2026-04-23T20:00:00.000000+08
+	// 2026-04-23T20:00:00+08
 	//static const gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
 	//static const size_t LEN = sizeof(ISO8601_);
 	//_Static_assert(29+1 == sizeof(ISO8601_));
-	constexpr gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
-	constexpr size_t LEN = sizeof(ISO8601_) - 1;
-	_Static_assert(29 == LEN);
-	g_autofree gchar* iso2 = g_date_time_format_iso8601(until);
-	g_assert_true(0 == strncmp(iso, iso2, LEN+1));
+	//constexpr gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
+	//constexpr size_t LEN = sizeof(ISO8601_) - 1;
+	//_Static_assert(29 == LEN);
+	//g_autofree gchar* iso2 = g_date_time_format_iso8601(until);
+	//g_assert_true(0 == strncmp(iso, iso2, LEN+1));
 
 	// epoch datetime
 	void epoch_test(GDateTime *e) {

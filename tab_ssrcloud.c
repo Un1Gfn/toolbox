@@ -4,11 +4,12 @@
 #include <gtk/gtk.h>
 #include "tabs.h"
 #include "util.h"
+#include "secrets.h"
 
 // GtkCheckButton
 #define SERVICE "mihomo.service"
-static GtkWidget *erase;
-static GtkWidget *restart;
+//static GtkWidget *erase;
+//static GtkWidget *restart;
 static GtkWidget *path;
 
 // secure global variable
@@ -53,13 +54,14 @@ static gboolean conf(const char *const k, const char *const v0, const char *cons
 }
 
 void convert() {
+
 	// init
 	gboolean _ = FALSE;
-	auto is = g_unix_input_stream_new(STDIN_FILENO, TRUE);
+	g_autoptr(GInputStream) is = g_unix_input_stream_new(STDIN_FILENO, TRUE);
 	g_assert_true(is);
-	auto p = json_parser_new();
-	auto os = g_unix_output_stream_new(STDOUT_FILENO, TRUE);
-	auto g = json_generator_new();
+	g_autoptr(JsonParser) p = json_parser_new();
+	g_autoptr(GOutputStream) os = g_unix_output_stream_new(STDOUT_FILENO, TRUE);
+	g_autoptr(JsonGenerator) g = json_generator_new();
 
 	// parse
 	json_parser_set_strict(p, TRUE);
@@ -87,33 +89,13 @@ void convert() {
 	json_generator_set_root(g, r);
 	json_generator_to_stream(g, os, NULL, NULL);
 
-	// cleanup
-	g_object_unref(g_steal_pointer(&g));
-	_ = g_output_stream_close(os, NULL, NULL);
-	g_assert_true(_);
-	g_object_unref(g_steal_pointer(&os));
-	g_object_unref(g_steal_pointer(&p));
-	_ = g_input_stream_close(is, NULL, NULL);
-	g_assert_true(_);
-	g_object_unref(g_steal_pointer(&is));
-
 }
 
 GtkWidget *tab_ssrcloud() {
 
-	//gtk_file_dialog_new()
+	////gtk_file_dialog_new()
 
-	// file path
-	path = gtk_entry_new();
-	gtk_widget_set_hexpand(path, TRUE);
-	auto choose = gtk_button_new_with_label("choose");
-
-	// start conversion
-	auto run = gtk_button_new_with_label("run");
-
-	auto bh = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_append(GTK_BOX(bh), path);
-	gtk_box_append(GTK_BOX(bh), choose);
+	//// file path
 
 	auto bv = gtk_list_box_new();
 	gtk_list_box_set_selection_mode(GTK_LIST_BOX(bv), GTK_SELECTION_NONE);
@@ -121,24 +103,44 @@ GtkWidget *tab_ssrcloud() {
 	gtk_widget_set_valign(bv, GTK_ALIGN_CENTER);
 	gtk_widget_set_vexpand(bv, TRUE);
 
-	// settings toggles
-	#define X(O) { \
-		auto label = gtk_label_new(G_STRINGIFY(O)" "); \
-		gtk_widget_set_halign(label, GTK_ALIGN_END); \
-		gtk_widget_set_hexpand(label, TRUE); \
-		O = gtk_switch_new(); \
-		gtk_switch_set_active(GTK_SWITCH(O), TRUE); \
-		gtk_widget_set_sensitive(O, FALSE); \
-		auto row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); \
-		gtk_box_append(GTK_BOX(row), label); \
-		gtk_box_append(GTK_BOX(row), O); \
-		gtk_list_box_append(GTK_LIST_BOX(bv), row); \
-	}
-	X(erase);
-	X(restart);
+	auto url = gtk_label_new(nullptr);
+	//gtk_label_set_markup(GTK_LABEL(url), SUBSCRIPTION);
+	//gtk_label_set_markup(GTK_LABEL(url), "<a href=\""SUBSCRIPTION"\">link</a>");
+	gtk_label_set_markup(GTK_LABEL(url), "<a href=\"" SUBSCRIPTION "\">" SUBSCRIPTION "</a>");
+	gtk_list_box_append(GTK_LIST_BOX(bv), url);
 
+	GtkWidget *x(gchar *s) {
+		auto label = gtk_label_new(s);
+		gtk_widget_set_halign(label, GTK_ALIGN_END);
+		gtk_widget_set_hexpand(label, TRUE);
+
+		auto row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+		gtk_box_append(GTK_BOX(row), label);
+
+		// leak
+		auto toggle = gtk_switch_new();
+		gtk_switch_set_active(GTK_SWITCH(toggle), TRUE);
+		gtk_widget_set_sensitive(toggle, FALSE);
+		gtk_box_append(GTK_BOX(row), toggle);
+
+		// no leak
+		//auto sdlfkj = gtk_label_new("ksks");
+		//gtk_box_append(GTK_BOX(row), sdlfkj);
+
+		return row;
+
+	}
+	gtk_list_box_append(GTK_LIST_BOX(bv), x("erase "));
+	gtk_list_box_append(GTK_LIST_BOX(bv), x("restart "));
+
+	auto bh = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	path = gtk_entry_new();
+	gtk_widget_set_hexpand(path, TRUE);
+	gtk_box_append(GTK_BOX(bh), path);
+	gtk_box_append(GTK_BOX(bh), gtk_button_new_with_label("choose"));
 	gtk_list_box_append(GTK_LIST_BOX(bv), GTK_WIDGET(bh));
-	gtk_list_box_append(GTK_LIST_BOX(bv), run);
+
+	gtk_list_box_append(GTK_LIST_BOX(bv), gtk_button_new_with_label("run"));
 
 	auto b = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_append(GTK_BOX(b), bv);

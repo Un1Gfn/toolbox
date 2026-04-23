@@ -32,7 +32,7 @@ static Tab tabs[] = {
 	{ &tab_env, "Env" },
 	{ &tab_ddc, "DDC/CI" },
 	//{ &tab_pdf, "PDF" },
-	//{ &tab_ssrcloud, "Ssrcloud" },
+	{ &tab_ssrcloud, "Ssrcloud" },
 	{ &tab_clk, "Clock" },
 	{ } // do not remove this line
 };

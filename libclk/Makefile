@@ -26,6 +26,6 @@ $O: %.o: %.c
 .PHONY: clean
 
 clean:
-	rm -f *.so *.o *.d 2>/dev/null || true
+	rm -f *.so *.o *.d *.i *.s 2>/dev/null || true
 
 -include $(wildcard *.d)

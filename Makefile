@@ -41,7 +41,7 @@ tab_pdf.o \
 
 tab_ssrcloud.o \
 : \
-%.o: %.c tabs.h
+%.o: %.c tabs.h secrets.h
 	$C -c $$(pkg-config --cflags gtk4,gio-unix-2.0,json-glib-1.0) -o $@ $<
 
 tab_base64.o \
@@ -69,7 +69,7 @@ tab_welcome.c \
 .PHONY: clean purge
 
 clean:
-	@rm -f toolbox tab_welcome.c *.o *.d tabs.h 2>/dev/null || true
+	@rm -f toolbox tab_welcome.c *.o *.d *.i *.s tabs.h 2>/dev/null || true
 	@{ for d in $(SO1); do $(MAKE) -C $$d clean || true; done; } 2>/dev/null 1>/dev/null
 
 purge:
