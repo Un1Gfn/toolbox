@@ -127,100 +127,95 @@ static void start(GtkEntry*, gpointer) {
 
 	g_mutex_lock(&change_state);
 
-	if (running) {
-		alert(G_STRLOC);
-		goto err;
+	if (running) { alert(G_STRLOC); } else {
+
+		running = true;
+
+		// now iso8601
+		g_autoptr(GDateTime) now = g_date_time_new_now_local();
+		g_assert_true(now);
+		g_autofree gchar *iso = g_date_time_format_iso8601(now);
+		g_assert_true(iso && 29 == strnlen(iso, 30));
+
+		// until iso8601
+		g_assert_true(memcpy(iso + 11, s, 5) == iso + 11);
+		g_assert_true(memcpy(iso + 16, ":00.000000", 9) == iso + 16);
+
+		// until datetime
+		g_autoptr(GTimeZone) default_tz = g_time_zone_new_local();
+		g_assert_true(default_tz);
+		until = g_date_time_new_from_iso8601(iso, default_tz);
+		g_assert_true(until);
+
+		// until iso8601 verify broken
+		// 2026-04-23T20:00:00.000000+08
+		// 2026-04-23T20:00:00+08
+		//static const gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
+		//static const size_t LEN = sizeof(ISO8601_);
+		//_Static_assert(29+1 == sizeof(ISO8601_));
+		//constexpr gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
+		//constexpr size_t LEN = sizeof(ISO8601_) - 1;
+		//_Static_assert(29 == LEN);
+		//g_autofree gchar* iso2 = g_date_time_format_iso8601(until);
+		//g_assert_true(0 == strncmp(iso, iso2, LEN+1));
+
+		// epoch datetime
+		void epoch_test(GDateTime *e) {
+			g_autofree gchar *_ = g_date_time_format_iso8601(e);
+			g_assert_true(0 == g_strcmp0(SEPOCH, _));
+		}
+		g_autoptr(GDateTime) uepoch = g_date_time_new_from_iso8601(UEPOCH, nullptr);
+		epoch_test(uepoch);
+		g_autoptr(GDateTime) sepoch = g_date_time_new_from_iso8601(SEPOCH, nullptr);
+		epoch_test(sepoch);
+		g_assert_true(!epoch);
+		epoch = g_date_time_new_from_unix_utc(0);
+		epoch_test(epoch);
+
+		// foreach start
+		Foreach() {
+			g_assert_true(!c->tick);
+			c->tick = c->new(&callback, c->label);
+			g_assert_true(c->tick);
+		}
+
+		g_debug("running...");
+
 	}
 
-	running = true;
-
-	// now iso8601
-	g_autoptr(GDateTime) now = g_date_time_new_now_local();
-	g_assert_true(now);
-	g_autofree gchar *iso = g_date_time_format_iso8601(now);
-	g_assert_true(iso && 29 == strnlen(iso, 30));
-
-	// until iso8601
-	g_assert_true(memcpy(iso + 11, s, 5) == iso + 11);
-	g_assert_true(memcpy(iso + 16, ":00.000000", 9) == iso + 16);
-
-	// until datetime
-	g_autoptr(GTimeZone) default_tz = g_time_zone_new_local();
-	g_assert_true(default_tz);
-	until = g_date_time_new_from_iso8601(iso, default_tz);
-	g_assert_true(until);
-
-	// until iso8601 verify broken
-	// 2026-04-23T20:00:00.000000+08
-	// 2026-04-23T20:00:00+08
-	//static const gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
-	//static const size_t LEN = sizeof(ISO8601_);
-	//_Static_assert(29+1 == sizeof(ISO8601_));
-	//constexpr gchar ISO8601_[] = "yyyy-mm-ddThh:mm:ss.nnnnnn+tz";
-	//constexpr size_t LEN = sizeof(ISO8601_) - 1;
-	//_Static_assert(29 == LEN);
-	//g_autofree gchar* iso2 = g_date_time_format_iso8601(until);
-	//g_assert_true(0 == strncmp(iso, iso2, LEN+1));
-
-	// epoch datetime
-	void epoch_test(GDateTime *e) {
-		g_autofree gchar *_ = g_date_time_format_iso8601(e);
-		g_assert_true(0 == g_strcmp0(SEPOCH, _));
-	}
-	g_autoptr(GDateTime) uepoch = g_date_time_new_from_iso8601(UEPOCH, nullptr);
-	epoch_test(uepoch);
-	g_autoptr(GDateTime) sepoch = g_date_time_new_from_iso8601(SEPOCH, nullptr);
-	epoch_test(sepoch);
-	g_assert_true(!epoch);
-	epoch = g_date_time_new_from_unix_utc(0);
-	epoch_test(epoch);
-
-	// foreach start
-	Foreach() {
-		g_assert_true(!c->tick);
-		c->tick = c->new(&callback, c->label);
-		g_assert_true(c->tick);
-	}
-
-	g_debug("running...");
-
-	err:
 	g_mutex_unlock(&change_state);
 
 }
 
 static void stop() {
 
-	if (!g_mutex_trylock(&change_state))
-		return;
+	if (!g_mutex_trylock(&change_state)) return;
 
-	if (!running) {
-		alert(G_STRLOC);
-		goto stop_err;
+	if (!running) { alert(G_STRLOC); } else {
+
+		running = false;
+
+		// foreach stop
+		Foreach() {
+			g_assert_true(c->tick);
+			c->destroy(&(c->tick));
+			g_assert_true(!c->tick);
+			I *i = g_malloc0(sizeof(I));
+			i->label = GTK_LABEL(c->label);
+			i->text = g_strdup(c->name);
+			g_idle_add_once(&idle, i);
+		}
+
+		g_assert_true(until);
+		g_assert_true(epoch);
+		g_date_time_unref(g_steal_pointer(&until));
+		g_date_time_unref(g_steal_pointer(&epoch));
+
+		g_debug("stoped");
+
 	}
 
-	running = false;
-
-	// foreach stop
-	Foreach() {
-		g_assert_true(c->tick);
-		c->destroy(&(c->tick));
-		g_assert_true(!c->tick);
-		I *i = g_malloc0(sizeof(I));
-		i->label = GTK_LABEL(c->label);
-		i->text = g_strdup(c->name);
-		g_idle_add_once(&idle, i);
-	}
-
-	g_assert_true(until);
-	g_assert_true(epoch);
-	g_date_time_unref(g_steal_pointer(&until));
-	g_date_time_unref(g_steal_pointer(&epoch));
-
-	g_debug("stoped");
-
-	stop_err:
-		g_mutex_unlock(&change_state);
+	g_mutex_unlock(&change_state);
 
 }
 
