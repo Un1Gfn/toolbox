@@ -1,6 +1,6 @@
 #pragma once
 #include <gtk/gtk.h>
 
-GtkWidget *flexiblespace();
+//GtkWidget *flexiblespace();
 
 void signals(GtkWidget*);

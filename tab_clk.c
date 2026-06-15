@@ -231,10 +231,11 @@ static void s_icon_press(GtkEntry* entry, GtkEntryIconPosition pos, gpointer use
 GtkWidget *tab_clk() {
 
 	auto box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-	gtk_box_append(box, flexiblespace());
 
 	buffer = gtk_entry_buffer_new("20:00", -1); // OK
 	auto entry = gtk_entry_new_with_buffer(buffer);
+	gtk_widget_set_valign(entry, GTK_ALIGN_CENTER);
+	gtk_widget_set_vexpand(entry, TRUE);
 
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_SECONDARY, "alarm-symbolic");
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry), GTK_ENTRY_ICON_PRIMARY, "media-playback-stop-symbolic");
@@ -244,15 +245,13 @@ GtkWidget *tab_clk() {
 
 	// foreach label
 	Foreach() {
-		gtk_box_append(box, flexiblespace());
 		c->label = gtk_label_new(c->name);
+		gtk_widget_set_vexpand(c->label, TRUE);
 		gtk_box_append(box, c->label);
 	}
 
 	// crash?
 	start(GTK_ENTRY(entry), nullptr);
-
-	gtk_box_append(box, flexiblespace());
 
 	return GTK_WIDGET(box);
 

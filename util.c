@@ -8,12 +8,12 @@ _Static_assert(4 == sizeof(int32_t));
 _Static_assert(4 == sizeof(gboolean));
 _Static_assert(4 == sizeof(gint));
 
-GtkWidget *flexiblespace(void) {
-	auto _ = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	_Static_assert(_Generic((_), GtkWidget*: 1, default: 0), "");
-	gtk_widget_set_vexpand(_, TRUE);
-	return _;
-}
+//GtkWidget *flexiblespace(void) {
+//	auto _ = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+//	_Static_assert(_Generic((_), GtkWidget*: 1, default: 0), "");
+//	gtk_widget_set_vexpand(_, TRUE);
+//	return _;
+//}
 
 static void s2(GtkWidget *self, gpointer userdata) {
 	g_assert_true(userdata);
